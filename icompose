@@ -135,12 +135,7 @@ def get_random_string(length):
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
     
-def show_header(text):
-    print(f"{color.header}-----------------------------------------------------------------{color.reset}")
-    print(f"{color.header}{color.bold}{text}{color.reset}")
-    print(f"{color.header}-----------------------------------------------------------------{color.reset}")
-
-def replace_value(value, envs={}):
+def replace_placeholders(value, envs={}):
     if isinstance(value, str):
         value = value.replace("[[IP]]", get_ip())
         value = value.replace("[[RANDOM16]]", get_random_string(16))
@@ -149,10 +144,11 @@ def replace_value(value, envs={}):
             value = value.replace(f"[[{option}]]", str(envs[option]))
     return value
 
-'''
-Options is a list of option objects
-Each option has a name and a descripction that will be show in brackets
-'''
+def show_header(text):
+    print(f"{color.header}-----------------------------------------------------------------{color.reset}")
+    print(f"{color.header}{color.bold}{text}{color.reset}")
+    print(f"{color.header}-----------------------------------------------------------------{color.reset}")
+
 def show_menu(title, options):
 
     error = False
@@ -184,7 +180,7 @@ def show_menu(title, options):
        
 def input_field(title, default):
 
-    default = replace_value(default)
+    default = replace_placeholders(default)
     prompt=f"{title} [{default}]"
     try:
         ans = input(f"{color.ask}{prompt}: {color.white}") or default
@@ -347,7 +343,7 @@ def configure_stack_menu(project):
         if p.returncode == 0:
             print(f"{color.info}\nService succesfully started{color.reset}")
             if 'success' in stack['data']:
-                print(f"{color.info}{replace_value(stack['data']['success'], envs)}{color.reset}")
+                print(f"{color.info}{replace_placeholders(stack['data']['success'], envs)}{color.reset}")
         else:
             print(f"{color.error}\nError starting service{color.reset}")
             command = f"docker compose -p {project} down"
