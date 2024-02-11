@@ -136,7 +136,25 @@ def get_random_string(length):
 # -----------------------------------------------------------------------------
 
 def write_stack_default(index, defaults):
-    None
+    
+    global stacks
+    file = stacks[index]['file']
+    print(f"{color.blue}Saving {defaults} to {file}{color.reset}")
+    
+    # Saving to cache
+    for field in stacks[index]['data']['fields']:
+        if field['name'] in defaults:
+            field['default'] = defaults[field['name']]
+
+    # Saving to file
+    with open(file, 'r') as h:
+        data = yaml.safe_load(h)
+    for field in data['x-dctui']['fields']:
+        if field['name'] in defaults:
+            field['default'] = defaults[field['name']]
+    with open(file, 'w') as h:
+        yaml.dump(data, h, default_flow_style=False, sort_keys=False)    
+
 
 def get_stacks():
     stacks = []
@@ -282,14 +300,15 @@ def yesno(prompt):
 
 def configure_service_menu(index):
 
-    options = []
-    stack = stacks[index]
-    options.append({'name': 'Exit'})
-
+    # Header
     print()
+    stack = stacks[index]
     show_header(f"Configure {stack['data']['name']}")
+
+    # Get slug
     slug = get_field("Stack name", stack['slug'])
 
+    # Get fields
     fields = stack['data'].get('fields', [])
     envs = {}
     for field in fields:
@@ -298,6 +317,7 @@ def configure_service_menu(index):
         else:
             envs[field['name']] = get_field(field.get('description', field.get('name')), field['default'])
     
+    # Start stack
     print(f"\n{color.info}I will start stack {slug} using this configuration: {envs}{color.reset}")
     proceed = yesno("Proceed?")
     if proceed:
@@ -312,6 +332,11 @@ def configure_service_menu(index):
             command = f"docker compose -p {slug} down"
             p = subprocess.run(command, shell=True)
 
+    # Save default
+    proceed = yesno("Save this values?")
+    if proceed:
+        write_stack_default(index, envs)
+    
 
 def manage_stack_menu(stack):
 
