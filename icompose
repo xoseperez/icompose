@@ -328,9 +328,15 @@ def configure_stack_menu(project):
 
     # Get fields
     fields = stack.get('data', {}).get('fields', [])
+    allow_advanced = None
     envs = {}
     for field in fields:
         description = field.get('description', field.get('name'))
+        advanced = field.get('advanced', False)
+        if advanced and allow_advanced == None:
+            allow_advanced = input_confirm('Configure advanced settings')
+        if advanced and allow_advanced == False:
+            continue
         if 'options' in field:
             envs[field['name']] = input_select(description, field['default'], field['options'])
         else:
