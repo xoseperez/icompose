@@ -16,7 +16,7 @@ x-dctui:
       default: "000000"
     - name: API_SECRET
       description: API secret (must be random)
-      default: "{{RANDOM32}}"
+      default: "[[RANDOM32]]"
     - name: CHIRPSTACK_HOSTS
       description: IP and/or domain names the serveice will be availbe (comma separated)
       default: "127.0.0.1,localhost"

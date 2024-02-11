@@ -11,6 +11,7 @@ x-dctui:
     - name: PORT
       description: Port the service will be listening on
       default: 1880
+  success: You can now visit the Node-RED web UI at http://[[IP]]:[[PORT]]
 
 # ---------------------------------------------------------------------------
 # SERVICES

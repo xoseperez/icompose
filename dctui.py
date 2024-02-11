@@ -246,11 +246,13 @@ def show_menu(title, options):
             ans = 0
         error = True
        
-def replace_value(value):
+def replace_value(value, envs={}):
     if isinstance(value, str):
-        value = value.replace("{{IP}}", get_ip())
-        value = value.replace("{{RANDOM16}}", get_random_string(16))
-        value = value.replace("{{RANDOM32}}", get_random_string(32))
+        value = value.replace("[[IP]]", get_ip())
+        value = value.replace("[[RANDOM16]]", get_random_string(16))
+        value = value.replace("[[RANDOM32]]", get_random_string(32))
+        for option in envs:
+            value = value.replace(f"[[{option}]]", str(envs[option]))
     return value
 
 def get_field(title, default):
@@ -321,7 +323,7 @@ def configure_service_menu(index):
             envs[field['name']] = get_field_options(field.get('description', field.get('name')), field['default'], field['options'])
         else:
             envs[field['name']] = get_field(field.get('description', field.get('name')), field['default'])
-    
+
     # Start stack
     print(f"\n{color.info}I will start stack {slug} using this configuration: {envs}{color.reset}")
     proceed = yesno("Proceed?")
@@ -332,13 +334,15 @@ def configure_service_menu(index):
         p = subprocess.run(command, shell=True)
         if p.returncode == 0:
             print(f"{color.info}\nService succesfully started{color.reset}")
+            if 'success' in stack['data']:
+                print(f"{color.info}{replace_value(stack['data']['success'], envs)}{color.reset}")
         else:
             print(f"{color.error}\nError starting service{color.reset}")
             command = f"docker compose -p {slug} down"
             p = subprocess.run(command, shell=True)
 
     # Save default
-    proceed = yesno("Save this values?")
+    proceed = yesno("\nSave this values?")
     if proceed:
         write_stack_default(index, envs)
     

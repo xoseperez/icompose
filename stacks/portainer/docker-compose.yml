@@ -10,10 +10,11 @@ x-dctui:
   fields:
     - name: PORT
       description: Port the service will be listening on
-      default: 8000
+      default: 9443
     - name: TZ
       description: Service time zone
       default: "Europe/London"
+  success: You can now visit the Portainer web UI at https://[[IP]]:[[PORT]]
 
 # ---------------------------------------------------------------------------
 # SERVICES
@@ -24,8 +25,8 @@ services:
     restart: unless-stopped
     image: portainer/portainer-ce:2.16.2
     ports:
-      - ${PORT:-8000}:8000
-      - 9443:9443
+      - 8000:8000
+      - ${PORT:-9443}:9443
     command: --admin-password '$$2y$$05$$CamDlWaqdhRQvy1AuOZlY.4QYi/GptU6lDruXD0YiYiwQljGJmamC' --templates 'https://raw.githubusercontent.com/RAKWireless/portainer-templates/master/portainer_app_template.json'
     network_mode: "bridge"
     volumes:
