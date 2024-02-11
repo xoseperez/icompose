@@ -15,7 +15,7 @@ x-icompose:
     - name: TZ
       description: Service time zone
       default: "Europe/London"
-  success: You can now visit the Portainer web UI at https://[[IP]]:[[PORT]]
+  success: You can now visit the Portainer web UI at https://[[IP]]:[[PORT]], default user is `admin` and password `changeme`.
 
 # ---------------------------------------------------------------------------
 # SERVICES

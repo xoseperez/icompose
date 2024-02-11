@@ -20,7 +20,14 @@ x-icompose:
       default: "[[RANDOM32]]"
     - name: CHIRPSTACK_HOSTS
       description: IP and/or domain names the serveice will be availbe (comma separated)
-      default: "127.0.0.1,localhost"
+      default: "127.0.0.1,localhost,[[IP]]"
+    - name: WEBUI_PORT
+      description: Port where the ChirpStack web UI will be available
+      default: 8080
+    - name: API_PORT
+      description: Port where the ChirpStack API will be available
+      default: 8090
+  success: You can now visit the ChirpStack web UI at http://[[IP]]:[[WEBUI_PORT]], default user is `admin` and password `admin`.
   
 # ---------------------------------------------------------------------------
 # SERVICES
@@ -51,14 +58,14 @@ services:
       - ENABLED_REGION=${BAND:-eu868}
       - NET_ID=${NET_ID:-000000}
     ports:
-      - 8080:8080
+      - ${WEBUI_PORT:-8080}:8080
 
   chirpstack-rest-api:
     image: chirpstack/chirpstack-rest-api:4
     restart: unless-stopped
-    command: --server chirpstack:8080 --bind 0.0.0.0:8090 --insecure
+    command: --server chirpstack:${WEBUI_PORT:-8080} --bind 0.0.0.0:8090 --insecure
     ports:
-      - 8090:8090
+      - ${API_PORT:-8090}:8090
     depends_on:
       - chirpstack
 
