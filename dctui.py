@@ -198,9 +198,10 @@ def read_stacks(config):
             with open(file, 'r') as h:
                 data = yaml.safe_load(h)
             if "x-dctui" in data:
-                slug = folder.split('/')[-1]
+                project = folder.split('/')[-1]
                 stacks.append({
-                    "slug": slug,
+                    "project": project,
+                    "group": data['x-dctui'].get('group', 'generic').lower(),
                     "file": file,
                     "data": data['x-dctui'],
                 })
@@ -312,8 +313,8 @@ def configure_service_menu(index):
     stack = stacks[index]
     show_header(f"Configure {stack['data']['name']}")
 
-    # Get slug
-    slug = get_field("Stack name", stack['slug'])
+    # Get project
+    project = get_field("Stack name", stack['project'])
 
     # Get fields
     fields = stack['data'].get('fields', [])
@@ -325,12 +326,12 @@ def configure_service_menu(index):
             envs[field['name']] = get_field(field.get('description', field.get('name')), field['default'])
 
     # Start stack
-    print(f"\n{color.info}I will start stack {slug} using this configuration: {envs}{color.reset}")
+    print(f"\n{color.info}I will start stack {project} using this configuration: {envs}{color.reset}")
     proceed = yesno("Proceed?")
     if proceed:
-        print(f"{color.info}\nBringing up {slug} stack{color.reset}")
+        print(f"{color.info}\nBringing up {project} stack{color.reset}")
         env_string = ' '.join([f"{key}={envs[key]}" for key in envs])
-        command = f"{env_string} docker compose -f {stack['file']} -p {slug} up -d"
+        command = f"{env_string} docker compose -f {stack['file']} -p {project} up -d"
         p = subprocess.run(command, shell=True)
         if p.returncode == 0:
             print(f"{color.info}\nService succesfully started{color.reset}")
@@ -338,7 +339,7 @@ def configure_service_menu(index):
                 print(f"{color.info}{replace_value(stack['data']['success'], envs)}{color.reset}")
         else:
             print(f"{color.error}\nError starting service{color.reset}")
-            command = f"docker compose -p {slug} down"
+            command = f"docker compose -p {project} down"
             p = subprocess.run(command, shell=True)
 
     # Save default
@@ -385,16 +386,29 @@ def existing_stacks_menu():
         else:
             return
 
-def create_stack_menu():
+def create_stack_menu(group="generic"):
 
     global stacks
-    options=[ {"name": stack['data']['name'], "description": stack['data'].get('description', '')} for stack in stacks]
+    options=[ {"name": stack['data']['name'], "description": stack['data'].get('description', '')} for stack in stacks if (stack['group'] == group)]
     options.append({'name': 'Exit'})
 
     while (True):
         selected = show_menu("Create stack", options)
         if selected < len(options)-1:
             configure_service_menu(selected)
+        else:
+            return
+
+def stack_group_menu():
+
+    global groups
+    options=[{"name": group.title()} for group in groups]
+    options.append({'name': 'Exit'})
+
+    while (True):
+        selected = show_menu("Select group", options)
+        if selected < len(options)-1:
+            create_stack_menu(options[selected]['name'].lower())
         else:
             return
 
@@ -409,7 +423,11 @@ def main_menu():
     while (True):
         selected = show_menu("Main menu", options)
         if 0 == selected:
-            create_stack_menu()
+            global groups
+            if 1 == len(groups):
+                create_stack_menu()
+            else:
+                stack_group_menu()
         elif 1 == selected:
             existing_stacks_menu()
         else:
@@ -432,12 +450,14 @@ if __name__ == "__main__":
 
     # Load stacks
     stacks = read_stacks(config)
+    groups = list(set([stack['group'] for stack in stacks]))
+    groups.sort()
 
     # Show menu
     main_menu()
 
     # Bye
-    print("Exiting")
+    print(f"\n{color.green}Bye!{color.reset}\n")
 
 
 

@@ -6,6 +6,7 @@ version: '3.7'
 
 x-dctui:
   name: Node-RED
+  group: Utils
   description: No-code flow management UI
   fields:
     - name: PORT

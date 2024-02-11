@@ -6,6 +6,7 @@ version: '2'
 
 x-dctui:
   name: Portainer
+  group: Utils
   description: Docker Management WebUI
   fields:
     - name: PORT

@@ -6,6 +6,7 @@ version: '3.4'
 
 x-dctui:
   name: ChirpStack v4
+  group: LoRaWAN
   description: LoRaWAN Network Server
   fields:
     - name: BAND

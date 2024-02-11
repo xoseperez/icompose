@@ -6,6 +6,7 @@ version: '3.4'
 
 x-dctui:
   name: The Things Stack
+  group: LoRaWAN
   description: LoRaWAN Network Server
   fields:
     - name: TTS_DOMAIN

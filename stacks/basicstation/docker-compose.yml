@@ -6,6 +6,7 @@ version: '3.4'
 
 x-dctui:
   name: BasicStation
+  group: LoRaWAN
   description: BasicStation Packet Forwarder for LoRaWAN Gateways
   fields:
     - name: MODEL
