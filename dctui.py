@@ -9,6 +9,7 @@ import socket
 import subprocess
 import random
 import string
+import shutil
 
 # -----------------------------------------------------------------------------
 # Globals
@@ -140,6 +141,10 @@ def write_stack_default(index, defaults):
     global stacks
     file = stacks[index]['file']
     print(f"{color.blue}Saving {defaults} to {file}{color.reset}")
+
+    # Backup original file
+    if not os.path.isfile(f"{file}.original"):
+        shutil.copy(file, f"{file}.original")
     
     # Saving to cache
     for field in stacks[index]['data']['fields']:
