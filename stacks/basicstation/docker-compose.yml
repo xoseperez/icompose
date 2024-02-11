@@ -12,7 +12,11 @@ x-icompose:
     - name: MODEL
       description: Concentrator model
       default: "RAK5146"
-      options: ["RAK5146", "RAK2287"]
+      options: ["RAK5146","RAK2287","RAK2245","RAK2246","RAK2247","RAK831","RAK833","RAK7243","RAK7243C","RAK7244","RAK7244C","RAK7246","RAK7246G","RAK7248","RAK7248C","RAK7271","RAK7371","IC880A","WM1302","R11E-LR8","R11E-LR9","SX1301","SX1302","SX1303","SX1308"]
+    - name: INTERFACE
+      description: Concentrator interface
+      default: "AUTO"
+      options: ["AUTO","SPI","USB"]
 
 # ---------------------------------------------------------------------------
 # SERVICES
@@ -28,10 +32,7 @@ services:
     network_mode: host
     environment:
       MODEL: "${MODEL:-RAK5146}"
-      #DESIGN: "CORECELL"
-      #INTERFACE: "USB"
-      #USE_LIBGPIOD: 0 # set to 1 by default for Raspberry Pi 5
-      #GPIO_CHIP: "gpiochip0" # set to "gpiochip4" by default for Raspberry Pi 5
+      INTERFACE: "${INTERFACE:-AUTO}"
       #GW_RESET_GPIO: 17
       #GW_POWER_EN_GPIO: 0
       #GW_POWER_EN_LOGIC:1
