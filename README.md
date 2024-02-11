@@ -1,4 +1,4 @@
-# ICOMPOSE - Interactive Docker Compose Terminal Utility
+# iCOMPOSE - Interactive Docker Compose Terminal Utility
 
 This tool is meant to manage docker stacks defined in docker-compose.yml files. 
 
