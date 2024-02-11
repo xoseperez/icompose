@@ -1,0 +1,146 @@
+version: '3.4'
+
+# ---------------------------------------------------------------------------
+# DCTUI CONFIGURATION
+# ---------------------------------------------------------------------------
+
+x-dctui:
+  name: ChirpStack v4
+  description: LoRaWAN Network Server
+  fields:
+    - name: BAND
+      description: Frequency band
+      default: "eu868"
+    - name: NET_ID
+      description: Network ID of the service
+      default: "000000"
+    - name: API_SECRET
+      description: API secret (must be random)
+      default: "{{RANDOM32}}"
+    - name: CHIRPSTACK_HOSTS
+      description: IP and/or domain names the serveice will be availbe (comma separated)
+      default: "127.0.0.1,localhost"
+  
+# ---------------------------------------------------------------------------
+# SERVICES
+# ---------------------------------------------------------------------------
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # Main application
+  # ---------------------------------------------------------------------------
+
+  chirpstack:
+    image: chirpstack/chirpstack:4
+    command: -c /etc/chirpstack
+    restart: unless-stopped
+    volumes:
+      - ./configuration/chirpstack:/etc/chirpstack
+      - chirpstack-certificates:/etc/chirpstack/certs
+    depends_on:
+      - postgres
+      - mosquitto
+      - redis
+    environment:
+      - MQTT_BROKER_HOST=mosquitto
+      - REDIS_HOST=redis
+      - POSTGRESQL_HOST=postgres
+      - API_SECRET=${API_SECRET:-you_must_change_this} # use the output of `openssl rand -base64 32`
+      - ENABLED_REGION=${BAND:-eu868}
+      - NET_ID=${NET_ID:-000000}
+    ports:
+      - 8080:8080
+
+  chirpstack-rest-api:
+    image: chirpstack/chirpstack-rest-api:4
+    restart: unless-stopped
+    command: --server chirpstack:8080 --bind 0.0.0.0:8090 --insecure
+    ports:
+      - 8090:8090
+    depends_on:
+      - chirpstack
+
+  postgres:
+    image: postgres:14-alpine
+    restart: unless-stopped
+    volumes:
+      - ./configuration/postgresql/initdb:/docker-entrypoint-initdb.d
+      - chirpstack-postgresql:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=root
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - chirpstack-redis:/data
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    ports:
+      - 1883:1883
+      - 8883:8883
+    volumes: 
+      - ./configuration/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - chirpstack-certificates:/mosquitto/config/certs
+
+  # ---------------------------------------------------------------------------
+  # Certificate generator
+  # ---------------------------------------------------------------------------
+
+  chirpstack-certificates:
+    build: 
+      context: ./chirpstack-certificates
+      dockerfile: Dockerfile-devel
+    volumes:
+      - chirpstack-certificates:/chirpstack-certificates/certs
+    environment:
+      - CHIRPSTACK_GATEWAY_BRIDGE_HOSTS=${CHIRPSTACK_HOSTS:-127.0.0.1,localhost}
+      - MQTT_BROKER_HOSTS=${CHIRPSTACK_HOSTS:-127.0.0.1,localhost}
+    command: make 
+
+  # ---------------------------------------------------------------------------
+  # Bridges
+  # ---------------------------------------------------------------------------
+
+  chirpstack-gateway-bridge-udp:
+    image: chirpstack/chirpstack-gateway-bridge:4
+    restart: unless-stopped
+    ports:
+      - 1700:1700/udp
+    volumes:
+      - ./configuration/chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge
+      - chirpstack-certificates:/etc/chirpstack-gateway-bridge/certs
+    depends_on: 
+      - mosquitto
+    environment:
+      - INTEGRATION__MQTT__EVENT_TOPIC_TEMPLATE=${BAND:-eu868}/gateway/{{ .GatewayID }}/event/{{ .EventType }}
+      - INTEGRATION__MQTT__STATE_TOPIC_TEMPLATE=${BAND:-eu868}/gateway/{{ .GatewayID }}/state/{{ .StateType }}
+      - INTEGRATION__MQTT__COMMAND_TOPIC_TEMPLATE=${BAND:-eu868}/gateway/{{ .GatewayID }}/command/#
+
+  chirpstack-gateway-bridge-basicstation:
+    image: chirpstack/chirpstack-gateway-bridge:4
+    restart: unless-stopped
+    command: -c /etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge-basicstation-${BAND:-eu868}.toml
+    ports:
+      - 3001:3001
+    volumes:
+      - ./configuration/chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge
+      - chirpstack-certificates:/etc/chirpstack-gateway-bridge/certs
+    depends_on: 
+      - mosquitto
+    environment:
+      - BACKEND__BASIC_STATION__TLS_CERT=/etc/chirpstack-gateway-bridge/certs/chirpstack-gateway-bridge/basicstation/basicstation.pem
+      - BACKEND__BASIC_STATION__TLS_KEY=/etc/chirpstack-gateway-bridge/certs/chirpstack-gateway-bridge/basicstation/basicstation-key.pem
+      - BACKEND__BASIC_STATION__CA_CERT=/etc/chirpstack-gateway-bridge/certs/ca/ca.pem
+
+# ---------------------------------------------------------------------------
+# PERSISTENT VOLUMES
+# ---------------------------------------------------------------------------
+
+volumes:
+  chirpstack-postgresql:
+  chirpstack-redis:
+  chirpstack-certificates:

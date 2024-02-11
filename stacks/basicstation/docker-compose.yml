@@ -1,0 +1,58 @@
+version: '3.4'
+
+# ---------------------------------------------------------------------------
+# DCTUI CONFIGURATION
+# ---------------------------------------------------------------------------
+
+x-dctui:
+  name: BasicStation
+  description: BasicStation Packet Forwarder for LoRaWAN Gateways
+  fields:
+    - name: MODEL
+      description: Concentrator model
+      default: "RAK5146"
+      options: ["RAK5146", "RAK2287"]
+
+# ---------------------------------------------------------------------------
+# SERVICES
+# ---------------------------------------------------------------------------
+
+services:
+
+  basicstation:
+    image: xoseperez/basicstation:latest
+    container_name: basicstation
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    environment:
+      MODEL: "${MODEL:-RAK5146}"
+      #DESIGN: "CORECELL"
+      #INTERFACE: "USB"
+      #USE_LIBGPIOD: 0 # set to 1 by default for Raspberry Pi 5
+      #GPIO_CHIP: "gpiochip0" # set to "gpiochip4" by default for Raspberry Pi 5
+      #GW_RESET_GPIO: 17
+      #GW_POWER_EN_GPIO: 0
+      #GW_POWER_EN_LOGIC:1
+      #DEVICE: "/dev/spidev0.1"
+      #SPI_SPEED: 8000000
+      #GATEWAY_EUI_NIC: "enx00e04c68160f"
+      #GATEWAY_EUI: "1122334455667788"
+      #TTS_REGION: "au1"
+      #TTS_TENANT: "xoseperez"
+      #TLS_SNI: false
+      #USE_CUPS: 0
+      #TC_URI: "wss://lns.example.com:8887"
+      #TC_TRUST: "-----BEGIN CERTIFICATE-----MIIDJDCCAgygAwIBAgIUdoPom8rI1/IYR7dG6JyxDGSUGBQwDQYJKoZIhvcNAQELBQAwGDE...."
+      #TC_CRT: "-----BEGIN CERTIFICATE-----MIICUzCCATugAwIBAgIUM3K60JYw9eRjxXly27wVD0w6QF0wDQYJKoZIhvcNAQELBQAwGDEWMBQG...."
+      #TC_KEY: "NNSXS.SLOC764GN3....."
+      #CUPS_URI: "https://lns.example.com:443"
+      #CUPS_TRUST: "-----BEGIN CERTIFICATE----- MIIDSjCCAjKgAwIBAgIQRK+wgNajJ7qJMDmGLvhAazANBgkqhkiG9w0BAQUFADA......"
+      #CUPS_CRT: "-----BEGIN CERTIFICATE-----MIICUzCCATugAwIBAgIUKGWM6utODCeqLXjXV1Nb4BhEHoYwDQYJKoZIhvcNAQE...."
+      #CUPS_KEY: "NNSXS.SLOC764GN3....."
+      #GATEWAY_PREFIX: "project"
+      #GATEWAY_ID: "gw-test-01"
+      #GATEWAY_NAME: "gw-test-01"
+      #TTS_USERNAME: "xoseperez"
+      #TTS_PERSONAL_KEY: "NNSXS.E2CK53N....."
+      #TTS_FREQUENCY_PLAN_ID: "EU_863_870_TTN"

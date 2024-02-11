@@ -1,0 +1,40 @@
+version: '3.7'
+
+# ---------------------------------------------------------------------------
+# DCTUI CONFIGURATION
+# ---------------------------------------------------------------------------
+
+x-dctui:
+  name: Node-RED
+  description: No-code flow management UI
+
+# ---------------------------------------------------------------------------
+# SERVICES
+# ---------------------------------------------------------------------------
+
+services:
+
+  nodered:
+    build:
+      context: ./nodered
+      dockerfile: Dockerfile
+    user: node-red
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - 'node-red-data:/data'
+    ports:
+      - "1880:1880"
+    environment:
+      - TZ=${TZ:-Europe/London}
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-100}
+      - NODE_RED_ENABLE_PROJECTS=${NODE_RED_ENABLE_PROJECTS:-false}
+
+# ---------------------------------------------------------------------------
+# PERSISTENT VOLUMES
+# ---------------------------------------------------------------------------
+
+volumes:
+  node-red-data:
+

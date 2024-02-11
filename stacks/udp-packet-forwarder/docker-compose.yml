@@ -1,0 +1,20 @@
+version: '3.4'
+
+x-dctui:
+  name: UDP Packet Forwarder
+  description: UDP Packet Forwarder for LoRaWAN Gateways
+  fields:
+    - name: MODEL
+      description: Concentrator model
+      default: "RAK5146"
+      options: ["RAK5146", "RAK2287"]
+
+services:
+  udp-packet-forwarder:
+    image: rakwireless/udp-packet-forwarder:latest
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    environment:
+      MODEL: ${MODEL:-RAK5146}
+      RADIO_DEV: "ANY"
