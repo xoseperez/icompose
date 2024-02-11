@@ -1,3 +1,5 @@
+#!/bin/env python3
+
 import os
 import sys
 import time
@@ -15,7 +17,8 @@ import shutil
 # Globals
 # -----------------------------------------------------------------------------
 
-APP_NAME = "DCTUI"
+APP_NAME = "iCOMPOSE"
+APP_DESCRIPTION = "Interactive Docker Compose Utility"
 APP_VERSION = "v0.0.1"
 
 # -----------------------------------------------------------------------------
@@ -155,7 +158,7 @@ def write_stack_default(project, defaults):
     # Saving to file
     with open(file, 'r') as h:
         data = yaml.safe_load(h)
-    for field in data['x-dctui']['fields']:
+    for field in data['x-icompose']['fields']:
         if field['name'] in defaults:
             field['default'] = defaults[field['name']]
     with open(file, 'w') as h:
@@ -198,13 +201,13 @@ def read_stacks(config):
             data={}
             with open(file, 'r') as h:
                 data = yaml.safe_load(h)
-            if "x-dctui" in data:
+            if "x-icompose" in data:
                 project = folder.split('/')[-1]
                 stacks.append({
                     "project": project,
-                    "group": data['x-dctui'].get('group', 'generic').lower(),
+                    "group": data['x-icompose'].get('group', 'generic').lower(),
                     "file": file,
-                    "data": data['x-dctui'],
+                    "data": data['x-icompose'],
                 })
     
     return stacks
@@ -449,7 +452,7 @@ if __name__ == "__main__":
     
     # Welcome message
     print(f"\n{color.header}{color.bold}{APP_NAME} {APP_VERSION}{color.reset}")
-    print(f"{color.header}Docker Compose Terminal User Interface{color.reset}")
+    print(f"{color.header}{APP_DESCRIPTION}{color.reset}")
     print(f"{color.header}(c) Xose Pérez <xose.perez@gmail.com>{color.reset}")
 
     # Load configuration file

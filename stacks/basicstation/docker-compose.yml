@@ -1,10 +1,10 @@
 version: '3.4'
 
 # ---------------------------------------------------------------------------
-# DCTUI CONFIGURATION
+# ICOMPOSE CONFIGURATION
 # ---------------------------------------------------------------------------
 
-x-dctui:
+x-icompose:
   name: BasicStation
   group: LoRaWAN
   description: BasicStation Packet Forwarder for LoRaWAN Gateways

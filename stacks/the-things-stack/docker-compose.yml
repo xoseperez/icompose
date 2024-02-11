@@ -1,10 +1,10 @@
 version: '3.4'
 
 # ---------------------------------------------------------------------------
-# DCTUI CONFIGURATION
+# ICOMPOSE CONFIGURATION
 # ---------------------------------------------------------------------------
 
-x-dctui:
+x-icompose:
   name: The Things Stack
   group: LoRaWAN
   description: LoRaWAN Network Server

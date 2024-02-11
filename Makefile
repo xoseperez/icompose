@@ -12,7 +12,7 @@ freeze: .venv/touchfile
 	set -e ; . .venv/bin/activate ; pip freeze
 	
 run: .venv/touchfile
-	set -e ; . .venv/bin/activate ; python dctui.py
+	set -e ; . .venv/bin/activate ; python3 icompose
 
 clean:
 	rm -rf .venv build dist *.egg-info .pytest-cache

@@ -1,10 +1,10 @@
 version: '3.7'
 
 # ---------------------------------------------------------------------------
-# DCTUI CONFIGURATION
+# ICOMPOSE CONFIGURATION
 # ---------------------------------------------------------------------------
 
-x-dctui:
+x-icompose:
   name: Node-RED
   group: Utils
   description: No-code flow management UI

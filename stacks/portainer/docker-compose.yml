@@ -1,10 +1,10 @@
 version: '2'
 
 # ---------------------------------------------------------------------------
-# DCTUI CONFIGURATION
+# ICOMPOSE CONFIGURATION
 # ---------------------------------------------------------------------------
 
-x-dctui:
+x-icompose:
   name: Portainer
   group: Utils
   description: Docker Management WebUI
