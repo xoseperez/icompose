@@ -224,9 +224,10 @@ def show_menu(title, options):
         error = True
        
 def replace_value(value):
-    value = value.replace("{{IP}}", get_ip())
-    value = value.replace("{{RANDOM16}}", get_random_string(16))
-    value = value.replace("{{RANDOM32}}", get_random_string(32))
+    if isinstance(value, str):
+        value = value.replace("{{IP}}", get_ip())
+        value = value.replace("{{RANDOM16}}", get_random_string(16))
+        value = value.replace("{{RANDOM32}}", get_random_string(32))
     return value
 
 def get_field(title, default):
