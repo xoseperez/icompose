@@ -136,10 +136,11 @@ def get_random_string(length):
 # Logic
 # -----------------------------------------------------------------------------
 
-def write_stack_default(index, defaults):
+def write_stack_default(project, defaults):
     
     global stacks
-    file = stacks[index]['file']
+    stack = get_stack(project)
+    file = stack['file']
     print(f"{color.blue}Saving {defaults} to {file}{color.reset}")
 
     # Backup original file
@@ -147,7 +148,7 @@ def write_stack_default(index, defaults):
         shutil.copy(file, f"{file}.original")
     
     # Saving to cache
-    for field in stacks[index]['data']['fields']:
+    for field in stack['data']['fields']:
         if field['name'] in defaults:
             field['default'] = defaults[field['name']]
 
@@ -208,6 +209,12 @@ def read_stacks(config):
     
     return stacks
 
+def get_stack(project):
+    global stacks
+    for stack in stacks:
+        if stack['project'] == project:
+            return stack
+    return None
 
 def show_header(text):
     print(f"{color.header}-----------------------------------------------------------------{color.reset}")
@@ -306,11 +313,11 @@ def yesno(prompt):
 # Menus
 # -----------------------------------------------------------------------------
 
-def configure_service_menu(index):
+def configure_service_menu(project):
 
     # Header
     print()
-    stack = stacks[index]
+    stack = get_stack(project)
     show_header(f"Configure {stack['data']['name']}")
 
     # Get project
@@ -345,7 +352,7 @@ def configure_service_menu(index):
     # Save default
     proceed = yesno("\nSave this values?")
     if proceed:
-        write_stack_default(index, envs)
+        write_stack_default(stack['project'], envs)
     
 
 def manage_stack_menu(stack):
@@ -389,13 +396,13 @@ def existing_stacks_menu():
 def create_stack_menu(group="generic"):
 
     global stacks
-    options=[ {"name": stack['data']['name'], "description": stack['data'].get('description', '')} for stack in stacks if (stack['group'] == group)]
+    options=[ {"project": stack['project'], "name": stack['data']['name'], "description": stack['data'].get('description', '')} for stack in stacks if (stack['group'] == group)]
     options.append({'name': 'Exit'})
 
     while (True):
         selected = show_menu("Create stack", options)
         if selected < len(options)-1:
-            configure_service_menu(selected)
+            configure_service_menu(options[selected]['project'])
         else:
             return
 
