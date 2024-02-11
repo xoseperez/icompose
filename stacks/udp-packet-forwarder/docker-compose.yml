@@ -1,5 +1,9 @@
 version: '3.4'
 
+# ---------------------------------------------------------------------------
+# DCTUI CONFIGURATION
+# ---------------------------------------------------------------------------
+
 x-dctui:
   name: UDP Packet Forwarder
   description: UDP Packet Forwarder for LoRaWAN Gateways
@@ -8,6 +12,10 @@ x-dctui:
       description: Concentrator model
       default: "RAK5146"
       options: ["RAK5146", "RAK2287"]
+
+# ---------------------------------------------------------------------------
+# SERVICES
+# ---------------------------------------------------------------------------
 
 services:
   udp-packet-forwarder:

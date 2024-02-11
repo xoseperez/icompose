@@ -7,6 +7,10 @@ version: '3.7'
 x-dctui:
   name: Node-RED
   description: No-code flow management UI
+  fields:
+    - name: PORT
+      description: Port the service will be listening on
+      default: 1880
 
 # ---------------------------------------------------------------------------
 # SERVICES
@@ -24,7 +28,7 @@ services:
     volumes:
       - 'node-red-data:/data'
     ports:
-      - "1880:1880"
+      - ${PORT:-1880}:1880
     environment:
       - TZ=${TZ:-Europe/London}
       - PUID=${PUID:-1000}

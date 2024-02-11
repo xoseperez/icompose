@@ -1,5 +1,9 @@
 version: '3.4'
 
+# ---------------------------------------------------------------------------
+# DCTUI CONFIGURATION
+# ---------------------------------------------------------------------------
+
 x-dctui:
   name: The Things Stack
   description: LoRaWAN Network Server
@@ -8,11 +12,9 @@ x-dctui:
       description: IP or domain name
       default: "{{IP}}"
 
-volumes:
-    redis: 
-    postgres:
-    stack-blob:
-    stack-data:
+# ---------------------------------------------------------------------------
+# SERVICES
+# ---------------------------------------------------------------------------
 
 services:
 
@@ -25,8 +27,6 @@ services:
         - POSTGRES_DB=ttn_lorawan
     volumes:
         - 'postgres:/var/lib/postgresql/data'
-    ports:
-        - "127.0.0.1:5432:5432"
     
   redis:
     image: redis:7.0.0-alpine3.15
@@ -34,16 +34,9 @@ services:
     restart: unless-stopped
     volumes:
         - 'redis:/data'
-    ports:
-        - "127.0.0.1:6379:6379"
   
   stack:
     image: xoseperez/the-things-stack:latest
-    #build:
-    #    context: .
-    #    args:
-    #        ARCH: amd64
-    #        REMOTE_TAG: 3.29.0
     restart: unless-stopped
     depends_on:
         - redis
@@ -57,8 +50,6 @@ services:
         TTN_LW_REDIS_ADDRESS: redis:6379
         TTN_LW_IS_DATABASE_URI: postgres://root:root@postgres:5432/ttn_lorawan?sslmode=disable
         CLI_AUTO_LOGIN: "false"
-    labels:
-        io.balena.features.balena-api: '1'
 
     ports:
     
@@ -80,4 +71,14 @@ services:
         - "8887:8887"
     
         - "1700:1700/udp"
-  
+
+# ---------------------------------------------------------------------------
+# PERSISTENT STORAGE
+# ---------------------------------------------------------------------------
+
+volumes:
+    redis: 
+    postgres:
+    stack-blob:
+    stack-data:
+
