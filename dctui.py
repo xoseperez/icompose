@@ -215,12 +215,12 @@ def show_menu(title, options):
 
         try:
             ans = int(input(f"\n{color.ask}Choose option: {color.white}"))
+            if (0 < ans) and (ans <= num_options):
+                return ans-1
         except KeyboardInterrupt:
             sys.exit(1)
         except:
             ans = 0
-        if (0 < ans) and (ans <= num_options):
-            return ans-1
         error = True
        
 def replace_value(value):
@@ -240,6 +240,32 @@ def get_field(title, default):
         sys.exit(1)
 
     return ans
+
+def get_field_options(title, default, options):
+
+    num_options = len(options)
+
+    try:
+        default = options.index(default)
+    except ValueError:
+        default = 1
+    
+    print(f"{color.ask}{title}:{color.reset}")
+    for index in range(num_options):
+        print(f"[{color.ask}{index+1:2d}{color.reset}] {options[index]}")
+    
+    ans=0
+    while 0 == ans:
+        try:
+            ans = int(get_field("Select option", default+1))
+            if (ans < 1) or (ans > num_options):
+                ans = 0
+        except KeyboardInterrupt:
+            sys.exit(1)
+        except:
+            ans = 0
+
+    return options[ans-1]
 
 def yesno(prompt):
 
@@ -262,13 +288,17 @@ def configure_service_menu(index):
 
     print()
     show_header(f"Configure {stack['data']['name']}")
+    slug = get_field("Stack name", stack['slug'])
+
     fields = stack['data'].get('fields', [])
     envs = {}
     for field in fields:
-        envs[field['name']] = get_field(field.get('description', field.get('name')), field['default'])
-    slug = get_field("Stack name", stack['slug'])
+        if 'options' in field:
+            envs[field['name']] = get_field_options(field.get('description', field.get('name')), field['default'], field['options'])
+        else:
+            envs[field['name']] = get_field(field.get('description', field.get('name')), field['default'])
     
-    print(f"\n{color.info}I will use this configuration: {envs}{color.reset}")
+    print(f"\n{color.info}I will start stack {slug} using this configuration: {envs}{color.reset}")
     proceed = yesno("Proceed?")
     if proceed:
         print(f"{color.info}\nBringing up {slug} stack{color.reset}")
