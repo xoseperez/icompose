@@ -388,12 +388,11 @@ def groups_menu():
     options=[{"name": group} for group in groups]
     options.append({'name': 'Exit'})
 
-    while (True):
-        selected = show_menu("Select group", options)
-        if selected < len(options)-1:
-            available_stacks_menu(options[selected]['name'].lower())
-        else:
-            return
+    selected = show_menu("Select group", options)
+    if selected < len(options)-1:
+        available_stacks_menu(options[selected]['name'].lower())
+    
+    # groups_menu does not grab returning calls from inner menus, unlike the rest
 
 def existing_stacks_menu():
 
