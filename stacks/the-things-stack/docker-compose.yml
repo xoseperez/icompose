@@ -11,8 +11,8 @@ x-icompose:
   fields:
     - name: TTS_DOMAIN
       description: IP or domain name
-      default: "[[IP]]"
-  success: You can now visit the The Things Stack web UI at https://[[IP]]
+      default: "{{IP}}"
+  success: You can now visit the The Things Stack web UI at https://{{IP}}
 
 # ---------------------------------------------------------------------------
 # SERVICES

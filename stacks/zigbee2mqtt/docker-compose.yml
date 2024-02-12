@@ -14,7 +14,7 @@ x-icompose:
       default: "/dev/ttyUSB0"
     - name: ZIGBEE2MQTT_CONFIG_MQTT_SERVER
       description: Address of the MQTT broker to publish to
-      default: "mqtt://[[IP]]:1880"
+      default: "mqtt://{{IP}}:1880"
     - name: ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC
       advanced: True
       description: Port for the web interface
@@ -23,7 +23,7 @@ x-icompose:
       advanced: True
       description: Port for the web interface
       default: 8080
-  success: You can now visit the Zigbee2MQTT web UI at http://[[IP]]:[[ZIGBEE2MQTT_CONFIG_PORT]]
+  success: You can now visit the Zigbee2MQTT web UI at http://{{IP}}:{{ZIGBEE2MQTT_CONFIG_PORT}}
 
 # ---------------------------------------------------------------------------
 # SERVICES

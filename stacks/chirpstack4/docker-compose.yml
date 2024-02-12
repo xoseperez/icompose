@@ -17,17 +17,17 @@ x-icompose:
       default: "000000"
     - name: API_SECRET
       description: API secret (must be random)
-      default: "[[RANDOM32]]"
+      default: "{{RANDOM32}}"
     - name: CHIRPSTACK_HOSTS
       description: IP and/or domain names the serveice will be availbe (comma separated)
-      default: "127.0.0.1,localhost,[[IP]]"
+      default: "127.0.0.1,localhost,{{IP}}"
     - name: WEBUI_PORT
       description: Port where the ChirpStack web UI will be available
       default: 8080
     - name: API_PORT
       description: Port where the ChirpStack API will be available
       default: 8090
-  success: You can now visit the ChirpStack web UI at http://[[IP]]:[[WEBUI_PORT]], default user is `admin` and password `admin`.
+  success: You can now visit the ChirpStack web UI at http://{{IP}}:{{WEBUI_PORT}}, default user is `admin` and password `admin`.
   
 # ---------------------------------------------------------------------------
 # SERVICES

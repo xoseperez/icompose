@@ -68,11 +68,11 @@ def get_random_string(length):
     
 def replace_placeholders(value, envs={}):
     if isinstance(value, str):
-        value = value.replace("[[IP]]", get_ip())
-        value = value.replace("[[RANDOM16]]", get_random_string(16))
-        value = value.replace("[[RANDOM32]]", get_random_string(32))
+        value = value.replace("{{IP}}", get_ip())
+        value = value.replace("{{RANDOM16}}", get_random_string(16))
+        value = value.replace("{{RANDOM32}}", get_random_string(32))
         for option in envs:
-            value = value.replace(f"[[{option}]]", str(envs[option]))
+            value = value.replace(f"{{{{{option}}}}}", str(envs[option]))
     return value
 
 def show_header(text):

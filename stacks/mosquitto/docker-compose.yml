@@ -21,7 +21,7 @@ x-icompose:
       advanced: True
       description: Service time zone
       default: "Europe/London"
-  success: MQTT broker ready on [[IP]]:[[MQTT_PORT]] (unsecure)
+  success: MQTT broker ready on {{IP}}:{{MQTT_PORT}} (unsecure)
 
 # ---------------------------------------------------------------------------
 # SERVICES
