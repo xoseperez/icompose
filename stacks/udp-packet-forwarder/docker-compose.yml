@@ -13,6 +13,18 @@ x-icompose:
       description: Concentrator model
       default: "RAK5146"
       options: ["RAK5146","RAK2287","RAK5148","RAK2245","RAK2246","RAK2247","RAK831","RAK833","RAK7243","RAK7243C","RAK7244","RAK7244C","RAK7246","RAK7246G","RAK7248","RAK7248C","RAK7271","RAK7371","IC880A","WM1302","R11E-LR8","R11E-LR9","R11E-LR2","SX1280ZXXXXGW1","SX1301","SX1302","SX1303","SX1308","SX1280"]
+    - name: GATEWAY_EUI
+      description: EUI of the gateway
+      default: "{{GATEWAY_EUI}}"
+    - name: INTERFACE
+      advanced: True
+      description: Concentrator interface
+      default: "ANY"
+      options: ["ANY","SPI","USB"]
+    - name: RADIO_DEV
+      advanced: True
+      description: Device mount point for the concentrator (i.e. "/dev/spidev0.0", "ANY" for autodiscover)
+      default: "ANY"
 
 # ---------------------------------------------------------------------------
 # SERVICES
@@ -25,5 +37,7 @@ services:
     privileged: true
     network_mode: host
     environment:
-      MODEL: ${MODEL:-RAK5146}
-      RADIO_DEV: "ANY"
+      MODEL: "${MODEL:-RAK5146}"
+      INTERFACE: "${INTERFACE:-ANY}"
+      RADIO_DEV: "${RADIO_DEV:-AUTO}"
+      GATEWAY_EUI: "${GATEWAY_EUI}"
