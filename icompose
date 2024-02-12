@@ -291,7 +291,7 @@ def configure_stack_menu(project):
     # Header
     print()
     stack = get_stack_by_id(project)
-    show_header(f"Configure '{stack['data']['name']}'")
+    show_header(f"Configure service '{project}'")
 
     # Get project
     project = input_field("Stack name", stack['project'])
@@ -350,7 +350,7 @@ def manage_stack_menu(project, running):
     options = [{'name': option} for option in ['Logs', f"{'Stop' if running else 'Start'}", 'Restart', 'Recreate', 'Destroy', 'Exit']]
 
     while (True):
-        selected = show_menu(f"Manage stack {project}", options)
+        selected = show_menu(f"Manage service '{project}'", options)
         if 0 == selected:
             command=f"docker compose -p {project} logs -f"
             try:
@@ -385,7 +385,7 @@ def available_stacks_menu(group="generic"):
     options.append({'name': 'Exit'})
 
     while (True):
-        selected = show_menu("Select stack", options)
+        selected = show_menu("Select service", options)
         if selected < len(options)-1:
             configure_stack_menu(options[selected]['project'])
         else:
@@ -409,7 +409,7 @@ def existing_stacks_menu():
     options.append({'name': 'Exit'})
 
     while (True):
-        selected = show_menu("Existing stacks", options)
+        selected = show_menu("Manage existing services", options)
         if selected < len(options)-1:
             if manage_stack_menu(options[selected]['name'], options[selected]['running']):
                 return
@@ -421,7 +421,7 @@ def docker_management_menu():
     options = [{'name': option} for option in ['List stacks', 'List containers', 'List images', 'List volumes', 'Prune containers', 'Prune images', 'Prune volumes', 'Prune all', 'Exit']]
 
     while (True):
-        selected = show_menu(f"Manage docker assets", options)
+        selected = show_menu(f"System maintenance (manage docker assets)", options)
         if 0 == selected:
             print(f"\n{color.info}Existing stacks:{color.reset}\n")
             command="docker compose ls -a"
@@ -458,9 +458,9 @@ def docker_management_menu():
 def main_menu():
 
     options=[
-        {'name': "Create stack"},
-        {'name': "Manage stacks"},
-        {'name': "Manage docker"},
+        {'name': "Create service"},
+        {'name': "Manage existing services"},
+        {'name': "System maintenance"},
         {'name': "Exit"},
     ]
 
