@@ -155,6 +155,15 @@ def input_confirm(prompt):
 
     return ans.upper() == 'Y'
 
+def input_enter():
+
+    try:
+        ans = input(f"{color.ask}Press [ENTER] to continue...{color.white}")
+    except KeyboardInterrupt:
+        sys.exit(1)
+
+    return
+
 # -----------------------------------------------------------------------------
 # Stack manipulation
 # -----------------------------------------------------------------------------
@@ -407,11 +416,51 @@ def existing_stacks_menu():
         else:
             return
 
+def docker_management_menu():
+
+    options = [{'name': option} for option in ['List stacks', 'List containers', 'List images', 'List volumes', 'Prune containers', 'Prune images', 'Prune volumes', 'Prune all', 'Exit']]
+
+    while (True):
+        selected = show_menu(f"Manage docker assets", options)
+        if 0 == selected:
+            print(f"\n{color.info}Existing stacks:{color.reset}\n")
+            command="docker compose ls -a"
+        elif 1 == selected:
+            print(f"\n{color.info}Existing containers:{color.reset}\n")
+            command="docker ps -a --format \"table {{.Names}}\t{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}\""
+        elif 2 == selected:
+            print(f"\n{color.info}Cached images:{color.reset}\n")
+            command="docker image ls"
+        elif 3 == selected:
+            print(f"\n{color.info}Existing volumes:{color.reset}\n")
+            command="docker volume ls"
+        elif 4 == selected:
+            print(f"\n{color.info}Pruning stopped containers{color.reset}\n")
+            command="docker container prune"
+        elif 5 == selected:
+            print(f"\n{color.info}Pruning unused images{color.reset}\n")
+            command="docker image prune -a"
+        elif 6 == selected:
+            print(f"\n{color.info}Pruning unused volumes{color.reset}\n")
+            command="docker volume prune -a"
+        elif 7 == selected:
+            print(f"\n{color.info}Pruning all unused objects{color.reset}\n")
+            command="docker system prune -a"
+        elif 8 == selected:
+            return
+
+        p = subprocess.run(command, shell=True)
+        print()
+        input_enter()
+
+
+
 def main_menu():
 
     options=[
         {'name': "Create stack"},
         {'name': "Manage stacks"},
+        {'name': "Manage docker"},
         {'name': "Exit"},
     ]
 
@@ -425,6 +474,8 @@ def main_menu():
                 groups_menu()
         elif 1 == selected:
             existing_stacks_menu()
+        elif 2 == selected:
+            docker_management_menu()
         else:
             return
 
