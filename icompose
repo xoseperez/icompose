@@ -237,14 +237,18 @@ def read_stack_folders():
     for folder in folders:
         read_stack_files(folder)
 
-'''
-TODO: check if we have write permissions to the stack file
-'''
 def write_stack_files(project, defaults):
     
     global stacks
     stack = get_stack_by_id(project)
     file = stack['file']
+
+    # Check write permissions
+    if not os.access(file, os.W_OK):
+        print(f"{color.error}I don't have permission to edit `{file}`{color.reset}")
+        # TODO: move the project stack to a user folder
+        return
+
     print(f"{color.blue}Saving {defaults} to {file}{color.reset}")
 
     # Backup original file
