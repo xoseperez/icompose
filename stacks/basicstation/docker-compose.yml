@@ -14,9 +14,26 @@ x-icompose:
       default: "RAK5146"
       options: ["RAK5146","RAK2287","RAK2245","RAK2246","RAK2247","RAK831","RAK833","RAK7243","RAK7243C","RAK7244","RAK7244C","RAK7246","RAK7246G","RAK7248","RAK7248C","RAK7271","RAK7371","IC880A","WM1302","R11E-LR8","R11E-LR9","SX1301","SX1302","SX1303","SX1308"]
     - name: INTERFACE
+      advanced: True
       description: Concentrator interface
       default: "AUTO"
       options: ["AUTO","SPI","USB"]
+    - name: DEVICE
+      advanced: True
+      description: Device mount point for the concentrator (i.e. "/dev/spidev0.0")
+      default: "/dev/spidev0.0"
+    - name: GW_RESET_GPIO
+      advanced: True
+      description: GPIO to reset the concentrator (only for SPI concentrators)
+      default: 17
+    - name: TTS_REGION
+      advanced: True
+      description: Region of the TTN cluster
+      default: "eu1"
+      options: ["eu1", "nam1", "au1"]
+    - name: TC_URI
+      advanced: True
+      description: Address of the LNS server (leave empty to use TTS cluster based on TTS_REGION above, must begin with "wss://")
 
 # ---------------------------------------------------------------------------
 # SERVICES
@@ -33,28 +50,12 @@ services:
     environment:
       MODEL: "${MODEL:-RAK5146}"
       INTERFACE: "${INTERFACE:-AUTO}"
-      #GW_RESET_GPIO: 17
-      #GW_POWER_EN_GPIO: 0
-      #GW_POWER_EN_LOGIC:1
-      #DEVICE: "/dev/spidev0.1"
-      #SPI_SPEED: 8000000
+      GW_RESET_GPIO: ${GW_RESET_GPIO:-17}
+      DEVICE: "${DEVICE:-/dev/spidev0.0}"
       #GATEWAY_EUI_NIC: "enx00e04c68160f"
       #GATEWAY_EUI: "1122334455667788"
-      #TTS_REGION: "au1"
-      #TTS_TENANT: "xoseperez"
-      #TLS_SNI: false
-      #USE_CUPS: 0
+      TTS_REGION: "${TTS_REGION:-eu1}"
       #TC_URI: "wss://lns.example.com:8887"
       #TC_TRUST: "-----BEGIN CERTIFICATE-----MIIDJDCCAgygAwIBAgIUdoPom8rI1/IYR7dG6JyxDGSUGBQwDQYJKoZIhvcNAQELBQAwGDE...."
       #TC_CRT: "-----BEGIN CERTIFICATE-----MIICUzCCATugAwIBAgIUM3K60JYw9eRjxXly27wVD0w6QF0wDQYJKoZIhvcNAQELBQAwGDEWMBQG...."
       #TC_KEY: "NNSXS.SLOC764GN3....."
-      #CUPS_URI: "https://lns.example.com:443"
-      #CUPS_TRUST: "-----BEGIN CERTIFICATE----- MIIDSjCCAjKgAwIBAgIQRK+wgNajJ7qJMDmGLvhAazANBgkqhkiG9w0BAQUFADA......"
-      #CUPS_CRT: "-----BEGIN CERTIFICATE-----MIICUzCCATugAwIBAgIUKGWM6utODCeqLXjXV1Nb4BhEHoYwDQYJKoZIhvcNAQE...."
-      #CUPS_KEY: "NNSXS.SLOC764GN3....."
-      #GATEWAY_PREFIX: "project"
-      #GATEWAY_ID: "gw-test-01"
-      #GATEWAY_NAME: "gw-test-01"
-      #TTS_USERNAME: "xoseperez"
-      #TTS_PERSONAL_KEY: "NNSXS.E2CK53N....."
-      #TTS_FREQUENCY_PLAN_ID: "EU_863_870_TTN"

@@ -327,25 +327,32 @@ def configure_stack_menu(project):
     project = input_field("Stack name", stack['project'])
 
     # Get fields
-    fields = stack.get('data', {}).get('fields', [])
-    allow_advanced = None
     envs = {}
+    allow_advanced = None
+    fields = stack.get('data', {}).get('fields', [])
     for field in fields:
-        description = field.get('description', field.get('name'))
+        
+        # Check if it is an Advanced field
         advanced = field.get('advanced', False)
         if advanced and allow_advanced == None:
             allow_advanced = input_confirm('Configure advanced settings')
         if advanced and allow_advanced == False:
             continue
+        
+        # Show prompt
+        description = field.get('description', field.get('name'))
+        default = field.get('default', '')
         if 'options' in field:
-            envs[field['name']] = input_select(description, field['default'], field['options'])
+            envs[field['name']] = input_select(description, default, field.get('options', [default]))
         else:
-            envs[field['name']] = input_field(description, field['default'])
+            envs[field['name']] = input_field(description, default)
 
     # Start stack
     print(f"\n{color.info}I will start the {project} stack using this configuration:\n{envs}{color.reset}")
     proceed = input_confirm("Proceed?")
     if proceed:
+        
+        # Run stack
         print(f"{color.info}\nBringing up {project} stack{color.reset}")
         env_string = ' '.join([f"{key}={envs[key]}" for key in envs])
         command = f"{env_string} docker compose -f {stack['file']} -p {project} up -d"
