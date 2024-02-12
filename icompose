@@ -22,75 +22,6 @@ APP_DESCRIPTION = "Interactive Docker Compose Utility"
 APP_VERSION = "v0.0.1"
 
 # -----------------------------------------------------------------------------
-# Configuration
-# -----------------------------------------------------------------------------
-
-class Config():
-
-    _data = flatdict.FlatDict({})
-    _args = None
-    _dirty = False
-
-    def __init__(self, file=None, args={}):
-        
-        try:
-            with open(file or "config.yml", "r") as f:
-                _data =  yaml.load(f, Loader=yaml.loader.SafeLoader)
-        except FileNotFoundError:
-            _data = {'logging': {'level' : logging.INFO}}
-        
-        self._data = flatdict.FlatDict(_data, delimiter='.')
-
-        # filter out "None" values
-        for key in self._data:
-            if self._data[key] == None:
-                del self._data[key]
-
-        self._args = args
-
-    def get(self, key, default=None):
-        
-        # External name
-        env_name = key.upper().replace('.', '_').replace('-', '_')
-
-        # Arguments have precedence over `config.yml` but do not get persisted
-        value = self._args.get(env_name, None)
-        
-        # Environment variables have precedence over `config.yml` but do not get persisted
-        if value is None:
-            value = os.environ.get(env_name, None)
-        
-        # Get the value from `config.yml` or the default
-        if value is None:
-            value = self._data.get(key)
-
-        if value is None:
-            value = default
-
-        return value
-
-    def set(self, key, value):
-        if self._data.get(key) != value:
-            self._data[key] = value
-            self._dirty = true
-
-    def save(self):
-        if self._dirty:
-            try:
-                with open(self._file, "w") as f:
-                    yaml.dump(self._data.as_dict(), f, default_flow_style=False)
-                self._dirty = False
-            except FileNotFoundError:
-                None
-
-    def unflat(self):
-        return self._data.as_dict()
-
-    def dump(self):
-        print(json.dumps(self._data.as_dict(), sort_keys=True, indent=4))
-
-
-# -----------------------------------------------------------------------------
 # Utils
 # -----------------------------------------------------------------------------
 
@@ -235,37 +166,67 @@ def get_stack_by_id(project):
             return stack
     return None
 
-def read_stack_files(config):
-    
-    stacks=[]
+def read_stack_file(project, file):
 
+    stack = None
+    
+    # Parse yaml file
+    data={}
+    with open(file, 'r') as h:
+        data = yaml.safe_load(h)
+    
+    if "x-icompose" in data:
+        stack = {
+            "project": project,
+            "group": data['x-icompose'].get('group', 'generic').lower(),
+            "file": file,
+            "data": data['x-icompose'],
+        }
+    
+    return stack
+
+def read_stack_files(folder):
+    
+    global stacks
+
+    # Check folder exist
+    if not os.path.isdir(folder):
+        return
+
+    # Get projects (folders)
     try:
-        folders=[x[0] for x in os.walk(config.get('stacks.folder'))]
+        folders=[x[0] for x in os.walk(folder)]
         folders.sort()
     except:
         folders=[]
     
     for folder in folders:
-        files = os.listdir(folder)
-        for file in files:
-            file = folder + "/" + file
-            if not os.path.isfile(file):
-                continue
-            if not file.endswith(".yml") and not file.endswith(".yaml"):
-                continue
-            data={}
-            with open(file, 'r') as h:
-                data = yaml.safe_load(h)
-            if "x-icompose" in data:
-                project = folder.split('/')[-1]
-                stacks.append({
-                    "project": project,
-                    "group": data['x-icompose'].get('group', 'generic').lower(),
-                    "file": file,
-                    "data": data['x-icompose'],
-                })
-    
-    return stacks
+        
+        # Get projecte name (this must be unique)
+        project = folder.split('/')[-1]
+        
+        # If the project has been already loaded, skip
+        if get_stack_by_id(project):
+            continue
+
+        # Find docker-compose.yml file
+        file = folder + "/docker-compose.yml"
+        if os.path.isfile(file):
+            stack = read_stack_file(project, file)
+            if stack:
+                stacks.append(stack)
+
+def read_stack_folders():
+
+    username = os.getenv("USERNAME")
+    folders = [
+        f"./stacks",
+        f"/home/{username}/.config/icompose/stacks",
+        f"/use/share/icompose/stacks"
+    ]
+
+    for folder in folders:
+        read_stack_files(folder)
 
 '''
 TODO: check if we have write permissions to the stack file
@@ -471,12 +432,9 @@ if __name__ == "__main__":
     print(f"{color.header}{APP_DESCRIPTION}{color.reset}")
     print(f"{color.header}(c) Xose Pérez <xose.perez@gmail.com>{color.reset}")
 
-    # Load configuration file
-    # TODO: get rid of config, look for the stacks in given location of the system and merge them
-    config = Config('config.yml')
-
     # Load stacks
-    stacks = read_stack_files(config)
+    stacks = []
+    read_stack_folders()
     groups = list(set([stack['group'] for stack in stacks]))
     groups.sort()
 
