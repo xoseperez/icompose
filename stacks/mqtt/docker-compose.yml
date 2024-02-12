@@ -1,47 +1,50 @@
-version: '3.4'
+version: '3.8'
 
 # ---------------------------------------------------------------------------
 # ICOMPOSE CONFIGURATION
 # ---------------------------------------------------------------------------
 
 x-icompose:
-  name: Portainer
+  name: Mosquitto
   group: Utils
-  description: Docker Management WebUI
+  description: MQTT broker
   fields:
-    - name: PORT
+    - name: MQTT_PORT
       advanced: True
-      description: Port for the web interface
-      default: 9443
+      description: MQTT port (unsecure)
+      default: 1883
+    - name: WS_PORT
+      advanced: True
+      description: WebSocket port
+      default: 9001
     - name: TZ
       advanced: True
       description: Service time zone
       default: "Europe/London"
-  success: You can now visit the Portainer web UI at https://[[IP]]:[[PORT]], default user is `admin` and password `changeme`.
+  success: MQTT broker ready on [[IP]]:[[MQTT_PORT]] (unsecure)
 
 # ---------------------------------------------------------------------------
 # SERVICES
 # ---------------------------------------------------------------------------
 
 services:
-  portainer:
+  
+  mqtt:
+    image: eclipse-mosquitto:2.0
     restart: unless-stopped
-    image: portainer/portainer-ce:2.16.2
-    ports:
-      - ${PORT:-9443}:9443
-    command: --admin-password '$$2y$$05$$CamDlWaqdhRQvy1AuOZlY.4QYi/GptU6lDruXD0YiYiwQljGJmamC' --templates 'https://raw.githubusercontent.com/RAKWireless/portainer-templates/master/portainer_app_template.json'
-    network_mode: "bridge"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer-data:/data
+      - mosquitto-data:/mosquitto
+    ports:
+      - ${MQTT_PORT:-1883}:1883
+      - ${WS_PORT:-9001}:9001
     environment:
+      - TZ=${TZ:-Europe/London}
       - PUID=${PUID:-1000}
       - PGID=${PGID:-100}
-      - TZ=${TZ:-Europe/London}
 
 # ---------------------------------------------------------------------------
 # PERSISTENT STORAGE
 # ---------------------------------------------------------------------------
 
 volumes:
-  portainer-data:
+  mosquitto-data:

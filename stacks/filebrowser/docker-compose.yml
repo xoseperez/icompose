@@ -1,47 +1,50 @@
-version: '3.4'
+version: '3.8'
 
 # ---------------------------------------------------------------------------
 # ICOMPOSE CONFIGURATION
 # ---------------------------------------------------------------------------
 
 x-icompose:
-  name: Portainer
+  name: File Browser
   group: Utils
-  description: Docker Management WebUI
+  description: Manage your local files from the browser
   fields:
-    - name: PORT
+    - name: FILEBROWSER_ROOT_PATH
+      description: Local path to browse
+      default: "/tmp"
+    - name: FILEBROWSER_PORT
       advanced: True
-      description: Port for the web interface
-      default: 9443
+      description: Web UI port
+      default: 8080
     - name: TZ
       advanced: True
       description: Service time zone
       default: "Europe/London"
-  success: You can now visit the Portainer web UI at https://[[IP]]:[[PORT]], default user is `admin` and password `changeme`.
+  success: Web UI ready on http://[[IP]]:[[FILEBROWSER_PORT]]
 
 # ---------------------------------------------------------------------------
 # SERVICES
 # ---------------------------------------------------------------------------
 
 services:
-  portainer:
-    restart: unless-stopped
-    image: portainer/portainer-ce:2.16.2
+
+  filebrowser:
+    image: filebrowser/filebrowser:s6 
     ports:
-      - ${PORT:-9443}:9443
-    command: --admin-password '$$2y$$05$$CamDlWaqdhRQvy1AuOZlY.4QYi/GptU6lDruXD0YiYiwQljGJmamC' --templates 'https://raw.githubusercontent.com/RAKWireless/portainer-templates/master/portainer_app_template.json'
-    network_mode: "bridge"
+      - ${FILEBROWSER_PORT:-8080}:80
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer-data:/data
+      - ${FILEBROWSER_ROOT_PATH:-/tmp}:/srv
+      - filebrowser-db:/database
+      - filebrowser-config:/config 
     environment:
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-100}
       - TZ=${TZ:-Europe/London}
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-100}     
 
 # ---------------------------------------------------------------------------
 # PERSISTENT STORAGE
 # ---------------------------------------------------------------------------
 
 volumes:
-  portainer-data:
+  filebrowser-db:
+  filebrowser-config:
