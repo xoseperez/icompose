@@ -16,15 +16,31 @@ x-icompose:
     - name: GATEWAY_EUI
       description: EUI of the gateway
       default: "{{GATEWAY_EUI}}"
-    - name: INTERFACE
-      advanced: True
-      description: Concentrator interface
-      default: "ANY"
-      options: ["ANY","SPI","USB"]
     - name: RADIO_DEV
       advanced: True
-      description: Device mount point for the concentrator (i.e. "/dev/spidev0.0", "ANY" for autodiscover)
+      description: Device mount point for the concentrator (i.e. "/dev/spidev0.0", "AUTO" for auto-discover)
+      default: "AUTO"
+    - name: INTERFACE
+      advanced: True
+      description: Concentrator interface (ANY to search over all interfaces in auto-discover mode)
       default: "ANY"
+      options: ["ANY","SPI","USB"]
+    - name: GW_RESET_GPIO
+      advanced: True
+      description: GPIO to reset the concentrator (only for SPI concentrators)
+      default: 17
+    - name: TTS_REGION
+      advanced: True
+      description: Region of the TTN cluster
+      default: "eu1"
+      options: ["eu1", "nam1", "au1"]
+    - name: SERVER_HOST
+      advanced: True
+      description: IP or domain name of the server (leave empty to use TTS cluster based on TTS_REGION above)
+    - name: SERVER_PORT
+      advanced: True
+      description: Port where the server is listening to
+      default: 1700
 
 # ---------------------------------------------------------------------------
 # SERVICES
@@ -38,6 +54,10 @@ services:
     network_mode: host
     environment:
       MODEL: "${MODEL:-RAK5146}"
-      INTERFACE: "${INTERFACE:-ANY}"
       RADIO_DEV: "${RADIO_DEV:-AUTO}"
+      INTERFACE: "${INTERFACE:-ANY}"
       GATEWAY_EUI: "${GATEWAY_EUI}"
+      GW_RESET_GPIO: ${GW_RESET_GPIO:-17}
+      TTS_REGION: "${TTS_REGION:-eu1}"
+      SERVER_HOST: "${SERVER_HOST}"
+      SERVER_PORT: "${SERVER_PORT:-1700}"
