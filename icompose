@@ -78,7 +78,7 @@ def get_gateway_eui():
     mac.insert(4, 'FE')
     return ''.join(mac).upper()
 
-def get_concentrator_mount_points():
+def get_devices():
     files = next(os.walk('/dev'), (None, None, []))[2]
     p = re.compile('ttyUSB|ttyACM|spidev')
     return [f"/dev/{file}" for file in files if p.match(file)]
@@ -86,9 +86,11 @@ def get_concentrator_mount_points():
 def replace_placeholders_options(options, envs={}):
 
     # LORAWAN_DEVICES
-    if "{{LORAWAN_DEVICES}}" in options:
-        index = options.index("{{LORAWAN_DEVICES}}")
-        options[index:index+1] = get_concentrator_mount_points()
+    try:
+        index = options.index("{{DEVICES}}")
+        options[index:index+1] = get_devices()
+    except:
+        None
     
     return options
 

@@ -20,7 +20,7 @@ x-icompose:
       advanced: True
       description: Device mount point for the concentrator (i.e. "/dev/spidev0.0", "AUTO" for auto-discover)
       default: "AUTO"
-      options: ["AUTO", "{{LORAWAN_DEVICES}}"]
+      options: ["AUTO", "{{DEVICES}}"]
     - name: INTERFACE
       advanced: True
       description: Concentrator interface (ANY to search over all interfaces in auto-discover mode)
