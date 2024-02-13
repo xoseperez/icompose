@@ -20,6 +20,7 @@ x-icompose:
       advanced: True
       description: Device mount point for the concentrator (i.e. "/dev/spidev0.0", "AUTO" for auto-discover)
       default: "AUTO"
+      options: ["AUTO", "{{LORAWAN_DEVICES}}"]
     - name: INTERFACE
       advanced: True
       description: Concentrator interface (ANY to search over all interfaces in auto-discover mode)
@@ -60,4 +61,4 @@ services:
       GW_RESET_GPIO: ${GW_RESET_GPIO:-17}
       TTS_REGION: "${TTS_REGION:-eu1}"
       SERVER_HOST: "${SERVER_HOST}"
-      SERVER_PORT: "${SERVER_PORT:-1700}"
+      SERVER_PORT: ${SERVER_PORT:-1700}

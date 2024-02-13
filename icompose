@@ -2,6 +2,7 @@
 
 import os
 import sys
+import re
 import time
 import flatdict
 import yaml
@@ -76,7 +77,21 @@ def get_gateway_eui():
     mac.insert(3, 'FF')
     mac.insert(4, 'FE')
     return ''.join(mac).upper()
+
+def get_concentrator_mount_points():
+    files = next(os.walk('/dev'), (None, None, []))[2]
+    p = re.compile('ttyUSB|ttyACM|spidev')
+    return [f"/dev/{file}" for file in files if p.match(file)]
     
+def replace_placeholders_options(options, envs={}):
+
+    # LORAWAN_DEVICES
+    if "{{LORAWAN_DEVICES}}" in options:
+        index = options.index("{{LORAWAN_DEVICES}}")
+        options[index:index+1] = get_concentrator_mount_points()
+    
+    return options
+
 def replace_placeholders(value, envs={}):
     if isinstance(value, str):
         value = value.replace("{{IP}}", get_ip())
@@ -135,12 +150,14 @@ def input_field(title, default):
 
 def input_select(title, default, options):
 
+    # Process options
+    options = replace_placeholders_options(options) or [default]
     num_options = len(options)
 
     try:
         default = options.index(default)
     except ValueError:
-        default = 1
+        default = 0
     
     print(f"{color.ask}{title}:{color.reset}")
     for index in range(num_options):
@@ -340,7 +357,7 @@ def configure_stack_menu(project):
         
         # Show prompt
         if 'options' in field:
-            envs[field['name']] = input_select(description, default, field.get('options', [default]))
+            envs[field['name']] = input_select(description, default, field.get('options', None))
         else:
             envs[field['name']] = input_field(description, default)
 
@@ -382,7 +399,7 @@ def manage_stack_menu(project, running):
     while (True):
         selected = show_menu(f"Manage service '{project}'", options)
         if 0 == selected:
-            check_stack_logs()
+            check_stack_logs(project)
         elif 1 == selected:
             command=f"docker compose -p {project} {'stop' if running else 'start'}"
             p = subprocess.run(command, shell=True)
