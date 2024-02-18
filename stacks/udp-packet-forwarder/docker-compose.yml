@@ -42,7 +42,9 @@ x-icompose:
       advanced: True
       description: Port where the server is listening to
       default: 1700
-
+  post-script: |
+    docker exec -it `docker compose -p {{project}} ps -a --format "{{.ID}}"` gateway_eui
+    
 # ---------------------------------------------------------------------------
 # SERVICES
 # ---------------------------------------------------------------------------

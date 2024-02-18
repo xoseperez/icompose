@@ -341,7 +341,7 @@ def configure_stack_menu(project):
     project = input_field("Stack name", stack['project'])
 
     # Get fields
-    envs = {}
+    envs = {'project': project}
     allow_advanced = None
     fields = stack.get('data', {}).get('fields', [])
     for field in fields:
@@ -364,10 +364,16 @@ def configure_stack_menu(project):
             envs[field['name']] = input_field(description, default)
 
     # Start stack
-    print(f"\n{color.info}I will start the {project} stack using this configuration:\n{envs}{color.reset}")
+    print(f"\n{color.info}I will start the stack using this configuration:\n{envs}{color.reset}")
     proceed = input_confirm("Proceed?")
     if proceed:
         
+        # Pre script
+        if 'pre-script' in stack['data']:
+            print(f"{color.info}")
+            p = subprocess.run(replace_placeholders(stack['data']['pre-script'], envs), shell=True)
+            print(f"{color.reset}")
+
         # Run stack
         print(f"{color.info}\nBringing up {project} stack{color.reset}")
         env_string = ' '.join([f"{key}={envs[key]}" for key in envs])
@@ -376,8 +382,18 @@ def configure_stack_menu(project):
         if p.returncode == 0:
             
             print(f"{color.info}\nService succesfully started{color.reset}")
+            
+            # Success string
             if 'success' in stack['data']:
                 print(f"{color.info}{replace_placeholders(stack['data']['success'], envs)}{color.reset}")
+            
+            # Post script
+            if 'post-script' in stack['data']:
+                print(f"{color.info}")
+                p = subprocess.run(replace_placeholders(stack['data']['post-script'], envs), shell=True)
+                print(f"{color.reset}")
+
+            #Shall we check the logs right now?
             check_logs = input_confirm("\nCheck logs?")
             if check_logs:
                 check_stack_logs(project)

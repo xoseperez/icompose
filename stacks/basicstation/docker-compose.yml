@@ -46,6 +46,8 @@ x-icompose:
     - name: TC_KEY
       advanced: True
       description: Client key of the LNS Server (use the certificate key or the API_KEY provided by TTI/TTN)
+  post-script: |
+    docker exec -it `docker compose -p {{project}} ps -a --format "{{.ID}}"` gateway_eui
 
 # ---------------------------------------------------------------------------
 # SERVICES
