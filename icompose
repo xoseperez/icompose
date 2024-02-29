@@ -49,6 +49,7 @@ class color:
     error = red
     info = green
     header = blue
+    debug = cyan
 
 
 def get_ip():
@@ -83,12 +84,24 @@ def get_devices():
     p = re.compile('ttyUSB|ttyACM|spidev')
     return [f"/dev/{file}" for file in files if p.match(file)]
     
+def get_interfaces():
+    command="cat /proc/net/dev | tail -n +3 | awk '{print $1}' | egrep -v 'lo|docker|vir|vnet|veth' | sed 's/://'"
+    p = subprocess.run(command, shell=True, capture_output=True)
+    return p.stdout.decode().strip().split('\n')
+
 def replace_placeholders_options(options, envs={}):
 
-    # LORAWAN_DEVICES
+    # LoRaWAN devices
     try:
         index = options.index("{{DEVICES}}")
         options[index:index+1] = get_devices()
+    except:
+        None
+    
+    # Network interfaces
+    try:
+        index = options.index("{{INTERFACES}}")
+        options[index:index+1] = get_interfaces()
     except:
         None
     
@@ -349,6 +362,12 @@ def configure_stack_menu(project):
         description = field.get('description', field.get('name'))
         default = field.get('default', '')
 
+        # Check if we have a condition
+        if 'condition' in field:
+            condition = field.get('condition', "True")
+            if not eval(condition, dict(envs)):
+                continue
+
         # Check if it is an Advanced field
         advanced = field.get('advanced', False)
         if advanced and allow_advanced == None:
@@ -378,6 +397,8 @@ def configure_stack_menu(project):
         print(f"{color.info}\nBringing up {project} stack{color.reset}")
         env_string = ' '.join([f"{key}={envs[key]}" for key in envs])
         command = f"{env_string} docker compose -f {stack['file']} -p {project} up -d"
+        
+        #print(f"{color.debug}Command: {command}{color.reset}")
         p = subprocess.run(command, shell=True)
         if p.returncode == 0:
             

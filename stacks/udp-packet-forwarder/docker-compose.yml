@@ -13,37 +13,50 @@ x-icompose:
       description: Concentrator model
       default: "RAK5146"
       options: ["RAK5146","RAK2287","RAK5148","RAK2245","RAK2246","RAK2247","RAK831","RAK833","RAK7243","RAK7243C","RAK7244","RAK7244C","RAK7246","RAK7246G","RAK7248","RAK7248C","RAK7271","RAK7371","IC880A","WM1302","R11E-LR8","R11E-LR9","R11E-LR2","SX1280ZXXXXGW1","SX1301","SX1302","SX1303","SX1308","SX1280"]
+    - name: GATEWAY_EUI_SOURCE
+      description: Where to build the GATEWAY_EUI from
+      default: "manual"
+      options: ["manual", "chip", "{{INTERFACES}}"]
     - name: GATEWAY_EUI
       description: EUI of the gateway
+      condition: "GATEWAY_EUI_SOURCE == 'manual'"
       default: "{{GATEWAY_EUI}}"
-    - name: RADIO_DEV
-      advanced: True
-      description: Device mount point for the concentrator (i.e. "/dev/spidev0.0", "AUTO" for auto-discover)
-      default: "AUTO"
-      options: ["AUTO", "{{DEVICES}}"]
     - name: INTERFACE
       advanced: True
-      description: Concentrator interface (ANY to search over all interfaces in auto-discover mode)
-      default: "ANY"
-      options: ["ANY","SPI","USB"]
-    - name: GW_RESET_GPIO
+      description: Concentrator interface ("AUTO" to auto-discover)
+      default: "AUTO"
+      options: ["AUTO","SPI","USB","NET"]
+    - name: DEVICE
+      advanced: True
+      description: Device of the concentrator (i.e. "/dev/spidev0.0", "AUTO" to auto-discover)
+      default: "AUTO"
+      options: ["AUTO", "{{DEVICES}}"]
+    - name: RESET_GPIO
       advanced: True
       description: GPIO to reset the concentrator (only for SPI concentrators)
       default: 17
+    - name: USE_TTS
+      advanced: True
+      description: Connect to TTN
+      default: "yes"
+      options: ["yes", "no"]
     - name: TTS_REGION
       advanced: True
+      condition: "USE_TTS == 'yes'"
       description: Region of the TTN cluster
       default: "eu1"
       options: ["eu1", "nam1", "au1"]
     - name: SERVER_HOST
       advanced: True
-      description: IP or domain name of the server (leave empty to use TTS cluster based on TTS_REGION above)
+      condition: "USE_TTS == 'no'"
+      description: IP or domain name of the server
     - name: SERVER_PORT
       advanced: True
+      condition: "USE_TTS == 'no'"
       description: Port where the server is listening to
       default: 1700
   post-script: |
-    docker exec -it `docker compose -p {{project}} ps -a --format "{{.ID}}"` gateway_eui
+    sleep 5 ; docker exec -it `docker compose -p {{project}} ps -a --format "{{.ID}}"` gateway_eui
     
 # ---------------------------------------------------------------------------
 # SERVICES
@@ -51,16 +64,17 @@ x-icompose:
 
 services:
   udp-packet-forwarder:
-    image: rakwireless/udp-packet-forwarder:latest
+    image: rakwireless/udp-packet-forwarder:amd64-latest
     restart: unless-stopped
     privileged: true
     network_mode: host
     environment:
       MODEL: "${MODEL:-RAK5146}"
-      RADIO_DEV: "${RADIO_DEV:-AUTO}"
-      INTERFACE: "${INTERFACE:-ANY}"
-      GATEWAY_EUI: "${GATEWAY_EUI}"
-      GW_RESET_GPIO: ${GW_RESET_GPIO:-17}
+      DEVICE: "${RADIO_DEV:-AUTO}"
+      INTERFACE: "${INTERFACE:-AUTO}"
+      GATEWAY_EUI_SOURCE: "${GATEWAY_EUI_SOURCE}"
+      GATEWAY_EUI: "${GATEWAY_EUI:-}"
+      RESET_GPIO: ${GW_RESET_GPIO:-17}
       TTS_REGION: "${TTS_REGION:-eu1}"
-      SERVER_HOST: "${SERVER_HOST}"
+      SERVER_HOST: "${SERVER_HOST:-}"
       SERVER_PORT: ${SERVER_PORT:-1700}
