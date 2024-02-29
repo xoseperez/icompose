@@ -13,41 +13,57 @@ x-icompose:
       description: Concentrator model
       default: "RAK5146"
       options: ["RAK5146","RAK2287","RAK2245","RAK2246","RAK2247","RAK831","RAK833","RAK7243","RAK7243C","RAK7244","RAK7244C","RAK7246","RAK7246G","RAK7248","RAK7248C","RAK7271","RAK7371","IC880A","WM1302","R11E-LR8","R11E-LR9","SX1301","SX1302","SX1303","SX1308"]
+    - name: GATEWAY_EUI_SOURCE
+      description: Where to build the GATEWAY_EUI from
+      default: "manual"
+      options: ["manual", "chip", "{{INTERFACES}}"]
     - name: GATEWAY_EUI
       description: EUI of the gateway
+      condition: "GATEWAY_EUI_SOURCE == 'manual'"
       default: "{{GATEWAY_EUI}}"
     - name: INTERFACE
       advanced: True
-      description: Concentrator interface
-      default: "SPI"
-      options: ["SPI","USB"]
+      description: Concentrator interface ("AUTO" to auto-discover)
+      default: "AUTO"
+      options: ["AUTO","SPI","USB","NET"]
     - name: DEVICE
       advanced: True
-      description: Device mount point for the concentrator (i.e. "/dev/spidev0.0")
-      options: ["{{DEVICES}}"]
-    - name: GW_RESET_GPIO
+      description: Device of the concentrator (i.e. "/dev/spidev0.0", "AUTO" to auto-discover)
+      default: "AUTO"
+      options: ["AUTO", "{{DEVICES}}"]
+    - name: RESET_GPIO
       advanced: True
+      condition: "(INTERFACE == 'AUTO') or (INTERFACE == 'SPI')"
       description: GPIO to reset the concentrator (only for SPI concentrators)
       default: 17
+    - name: USE_TTS
+      advanced: True
+      description: Connect to TTN
+      default: "yes"
+      options: ["yes", "no"]
     - name: TTS_REGION
+      condition: "USE_TTS == 'yes'"
       advanced: True
       description: Region of the TTN cluster
       default: "eu1"
       options: ["eu1", "nam1", "au1"]
     - name: TC_URI
+      condition: "USE_TTS == 'no'"
       advanced: True
-      description: Address of the LNS server (leave empty to use TTN cluster based on TTS_REGION above, must begin with "wss://")
+      description: Address of the LNS server (must begin with "wss://")
     - name: TC_TRUST
+      condition: "USE_TTS == 'no'"
       advanced: True
-      description: CA certificate of the LNS Server (leave empty to use TTI/TTN certificates)
+      description: CA certificate of the LNS Server
     - name: TC_CRT
+      condition: "USE_TTS == 'no'"
       advanced: True
       description: Client certificate of the LNS Server
     - name: TC_KEY
       advanced: True
       description: Client key of the LNS Server (use the certificate key or the API_KEY provided by TTI/TTN)
   post-script: |
-    docker exec -it `docker compose -p {{project}} ps -a --format "{{.ID}}"` gateway_eui
+    sleep 5 ; docker exec -it `docker compose -p {{project}} ps -a --format "{{.ID}}"` gateway_eui
 
 # ---------------------------------------------------------------------------
 # SERVICES
@@ -64,12 +80,12 @@ services:
     environment:
       MODEL: "${MODEL:-RAK5146}"
       INTERFACE: "${INTERFACE:-AUTO}"
-      GW_RESET_GPIO: ${GW_RESET_GPIO:-17}
+      RESET_GPIO: ${RESET_GPIO:-17}
       DEVICE: "${DEVICE:-/dev/spidev0.0}"
-      #GATEWAY_EUI_NIC: "enx00e04c68160f"
-      GATEWAY_EUI: ${GATEWAY_EUI}
+      GATEWAY_EUI_SOURCE: "${GATEWAY_EUI_SOURCE}"
+      GATEWAY_EUI: "${GATEWAY_EUI:-}"
       TTS_REGION: "${TTS_REGION:-eu1}"
-      TC_URI: "${TC_URI}"
-      TC_TRUST: "${TC_TRUST}"
-      TC_CRT: "${TC_CRT}"
-      TC_KEY: "${TC_KEY}"
+      TC_URI: "${TC_URI:-}"
+      TC_TRUST: "${TC_TRUST:-}"
+      TC_CRT: "${TC_CRT:-}"
+      TC_KEY: "${TC_KEY:-}"

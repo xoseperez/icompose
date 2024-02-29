@@ -33,6 +33,7 @@ x-icompose:
       options: ["AUTO", "{{DEVICES}}"]
     - name: RESET_GPIO
       advanced: True
+      condition: "(INTERFACE == 'AUTO') or (INTERFACE == 'SPI')"
       description: GPIO to reset the concentrator (only for SPI concentrators)
       default: 17
     - name: USE_TTS
