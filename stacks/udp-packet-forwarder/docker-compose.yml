@@ -56,6 +56,12 @@ x-icompose:
       condition: "USE_TTS == 'no'"
       description: Port where the server is listening to
       default: 1700
+    - name: WHITELIST_NETIDS
+      advanced: True
+      description: Allow only messages from devices in this NetIDs, leave empty to disable filtering.
+    - name: WHITELIST_OUIS
+      advanced: True
+      description: Allow only join requests from devices from these OUIs, leave empty to disable filtering.
   post-script: |
     sleep 5 ; docker exec -it `docker compose -p {{project}} ps -a --format "{{.ID}}"` gateway_eui
     
@@ -65,7 +71,7 @@ x-icompose:
 
 services:
   udp-packet-forwarder:
-    image: rakwireless/udp-packet-forwarder:amd64-latest
+    image: rakwireless/udp-packet-forwarder:latest
     restart: unless-stopped
     privileged: true
     network_mode: host
@@ -79,3 +85,5 @@ services:
       TTS_REGION: "${TTS_REGION:-eu1}"
       SERVER_HOST: "${SERVER_HOST:-}"
       SERVER_PORT: ${SERVER_PORT:-1700}
+      WHITELIST_NETIDS: ${WHITELIST_NETIDS:-}
+      WHITELIST_OUIS: ${WHITELIST_OUIS:-}
