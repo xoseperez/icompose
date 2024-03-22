@@ -123,7 +123,7 @@ def show_header(text):
     print(f"{color.header}{color.bold}{text}{color.reset}")
     print(f"{color.header}-----------------------------------------------------------------{color.reset}")
 
-def show_menu(title, options):
+def show_menu(title, options, first_upper=True):
 
     error = False
     num_options = len(options)
@@ -140,7 +140,7 @@ def show_menu(title, options):
         for index in range(num_options):
             name = options[index]['name']
             description = options[index].get('description',None)
-            print(f"[{color.ask}{index+1:2d}{color.reset}] {name.title()} {color.info+'('+description+')'+color.reset if description else ''}")
+            print(f"[{color.ask}{index+1:2d}{color.reset}] {name.title() if first_upper else name} {color.info+'('+description+')'+color.reset if description else ''}")
 
         try:
             ans = int(input(f"\n{color.ask}Choose option: {color.white}"))
@@ -465,7 +465,7 @@ def available_stacks_menu(group="generic"):
     options.append({'name': 'Exit'})
 
     while (True):
-        selected = show_menu("Select service", options)
+        selected = show_menu("Select service", options, False)
         if selected < len(options)-1:
             configure_stack_menu(options[selected]['project'])
         else:
@@ -489,7 +489,7 @@ def existing_stacks_menu():
     options.append({'name': 'Exit'})
 
     while (True):
-        selected = show_menu("Manage existing services", options)
+        selected = show_menu("Manage existing services", options, False)
         if selected < len(options)-1:
             if manage_stack_menu(options[selected]['name'], options[selected]['running']):
                 return
