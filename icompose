@@ -151,10 +151,10 @@ def show_menu(title, options, first_upper=True):
             ans = 0
         error = True
        
-def input_field(title, default):
+def input_field(title, default=None):
 
     default = replace_placeholders(default)
-    prompt=f"{title} [{default}]"
+    prompt=f"{title} [{default}]" if default else f"{title}"
     try:
         ans = input(f"{color.ask}{prompt}: {color.white}") or default
     except KeyboardInterrupt:
@@ -189,6 +189,36 @@ def input_select(title, default, options):
             ans = 0
 
     return options[ans-1]
+
+def input_multiple_choice(title, options):
+
+    # Process options
+    num_options = len(options)
+
+    print(f"{color.ask}{title}:{color.reset}")
+    for index in range(num_options):
+        print(f"[{color.ask}{index+1:2d}{color.reset}] {options[index]}")
+    
+    ask = True
+    selected = []
+    while ask:
+        ask = False
+        try:
+            selected = []
+            elements = input_field("Multiple select (space separated)")
+            if elements:
+                for element in elements.split(' '):
+                    element = int(element)
+                    if (element < 1) or (element > num_options):
+                        ask = True
+                        break
+                    selected.append(options[element-1])
+        except KeyboardInterrupt:
+            sys.exit(1)
+        except:
+            ask = True
+
+    return selected
 
 def input_confirm(prompt):
 
@@ -234,6 +264,7 @@ def read_stack_file(project, file):
             "group": data['x-icompose'].get('group', 'generic').lower(),
             "file": file,
             "data": data['x-icompose'],
+            "services": list(data['services'].keys())
         }
     
     return stack
@@ -352,8 +383,19 @@ def configure_stack_menu(project):
     # Get project
     project = input_field("Stack name", stack['project'])
 
-    # Get fields
+    # Environment
     envs = {'project': project}
+
+    # Get optional services
+    deploy = []
+    optional_services = stack.get('data', {}).get('services', {}).get('optional', [])
+    if len(optional_services) > 0:
+        deploy = [service for service in stack['services'] if service not in optional_services]
+        selection = input_multiple_choice("Optional services", optional_services)
+        for service in selection:
+            deploy.append(service)
+
+    # Get fields
     allow_advanced = None
     fields = stack.get('data', {}).get('fields', [])
     for field in fields:
@@ -395,7 +437,7 @@ def configure_stack_menu(project):
         # Run stack
         print(f"{color.info}\nBringing up {project} stack{color.reset}")
         env_string = ' '.join([f"{key}={envs[key]}" for key in envs])
-        command = f"{env_string} docker compose -f {stack['file']} -p {project} up -d"
+        command = f"{env_string} docker compose -f {stack['file']} -p {project} up -d {' '.join(deploy)}"
         
         #print(f"{color.debug}Command: {command}{color.reset}")
         p = subprocess.run(command, shell=True)

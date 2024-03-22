@@ -8,6 +8,10 @@ x-icompose:
   name: ChirpStack v4
   group: LoRaWAN
   description: LoRaWAN Network Server
+  services: 
+    optional:
+      - chirpstack-gateway-bridge-udp
+      - chirpstack-gateway-bridge-basicstation
   fields:
     - name: BAND
       description: Frequency band

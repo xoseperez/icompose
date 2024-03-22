@@ -8,6 +8,9 @@ x-icompose:
   name: ChirpStack Concentratord
   group: LoRaWAN
   description: LoRa(WAN) Daemon
+  services: 
+    optional:
+      - chirpstack-gateway-bridge-concentratord
   fields:
     - name: MODEL
       description: Concentrator model
