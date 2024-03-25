@@ -387,13 +387,13 @@ def configure_stack_menu(project):
     envs = {'project': project}
 
     # Get optional services
-    deploy = []
+    envs['services'] = []
     optional_services = stack.get('data', {}).get('services', {}).get('optional', [])
     if len(optional_services) > 0:
-        deploy = [service for service in stack['services'] if service not in optional_services]
+        envs['services'] = [service for service in stack['services'] if service not in optional_services]
         selection = input_multiple_choice("Optional services", optional_services)
         for service in selection:
-            deploy.append(service)
+            envs['services'].append(service)
 
     # Get fields
     allow_advanced = None
@@ -436,8 +436,8 @@ def configure_stack_menu(project):
 
         # Run stack
         print(f"{color.info}\nBringing up {project} stack{color.reset}")
-        env_string = ' '.join([f"{key}={envs[key]}" for key in envs])
-        command = f"{env_string} docker compose -f {stack['file']} -p {project} up -d {' '.join(deploy)}"
+        env_string = ' '.join([f"{key}={envs[key]}" for key in envs if key!='services'])
+        command = f"{env_string} docker compose -f {stack['file']} -p {project} up -d {' '.join(envs['services'])}"
         
         #print(f"{color.debug}Command: {command}{color.reset}")
         p = subprocess.run(command, shell=True)
