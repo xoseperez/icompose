@@ -73,7 +73,6 @@ services:
 
   basicstation:
     image: xoseperez/basicstation:latest
-    container_name: basicstation
     restart: unless-stopped
     privileged: true
     network_mode: host
