@@ -56,6 +56,14 @@ x-icompose:
       condition: "USE_TTS == 'no'"
       description: Port where the server is listening to
       default: 1700
+    - name: STAT_INTERVAL
+      advanced: True
+      default: 30
+      description: Interval between heartbeat messages (in seconds).
+    - name: PUSH_TIMEOUT
+      advanced: True
+      default: 100
+      description: Timeout when pushing messages to LNS (in milliseconds). Increase if missing packets on LNS side.
     - name: WHITELIST_NETIDS
       advanced: True
       description: Allow only messages from devices in this NetIDs, leave empty to disable filtering.
@@ -71,7 +79,7 @@ x-icompose:
 
 services:
   udp-packet-forwarder:
-    image: rakwireless/udp-packet-forwarder:latest
+    image: rakwireless/udp-packet-forwarder:v2
     restart: unless-stopped
     privileged: true
     network_mode: host
