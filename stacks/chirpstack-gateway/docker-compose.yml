@@ -11,7 +11,7 @@ x-icompose:
   services: 
     optional:
       - chirpstack-concentratord-slot2
-      - chirpstack-gateway-relay
+      - chirpstack-gateway-mesh
       - chirpstack-mqtt-forwarder
       - chirpstack-udp-forwarder
   fields:
@@ -33,7 +33,7 @@ x-icompose:
       advanced: True
       condition: "(INTERFACE_SLOT1 == 'SPI')"
       description: GPIO to reset the concentrator
-      default: 0
+      default: 17
     - name: MODEL_SLOT2
       condition: "('chirpstack-concentratord-slot2' in services)"
       description: Concentrator model on slot 2
@@ -56,30 +56,71 @@ x-icompose:
       advanced: True
       condition: "('chirpstack-concentratord-slot2' in services) and (INTERFACE_SLOT2 == 'SPI')"
       description: GPIO to reset the concentrator on slot 2
-      default: 0
+      default: 6
+    - name: RELAY_SIGNING_KEY
+      advanced: True
+      condition: "('chirpstack-gateway-mesh' in services)"
+      description: "Common signing key for all relay gateways"
+      default: "00000000000000000000000000000000"
     - name: RELAY_BORDER
       advanced: True
-      condition: "('chirpstack-gateway-relay' in services) and ('chirpstack-mqtt-forwarder' in services)"
+      condition: "('chirpstack-gateway-mesh' in services) and ('chirpstack-mqtt-forwarder' in services)"
       description: "Is it a border gateway?"
       options: ["true", "false"]
       default: "true"
     - name: RELAY_BORDER
       advanced: True
-      condition: "('chirpstack-gateway-relay' in services) and ('chirpstack-mqtt-forwarder' not in services)"
+      condition: "('chirpstack-gateway-mesh' in services) and ('chirpstack-mqtt-forwarder' not in services)"
       description: "Is it a border gateway?"
       options: ["true", "false"]
       default: "false"
+    - name: RELAY_MAX_HOP_COUNT
+      advanced: True
+      condition: "('chirpstack-gateway-mesh' in services)"
+      description: "Max hops for relayed messages"
+      default: "1"
     - name: RELAY_IGNORE_DIRECT
       advanced: True
-      condition: "('chirpstack-gateway-relay' in services)"
+      condition: "('chirpstack-gateway-mesh' in services) and (RELAY_BORDER == 'true')"
       description: "Ignore direct messages?"
       options: ["true", "false"]
       default: "false"
     - name: RELAY_REGION
       advanced: True
-      condition: "('chirpstack-gateway-relay' in services)"
+      condition: "('chirpstack-gateway-mesh' in services)"
       description: "Band to use to relay messages"
       default: "eu868"
+    - name: RELAY_TX_POWER
+      advanced: True
+      condition: "('chirpstack-gateway-mesh' in services)"
+      description: "Relay TX power (1 to 10 for 2.4 GHz, 1 to 16 for the rest)"
+      default: "10"
+    - name: RELAY_MODULATION
+      advanced: True
+      condition: "('chirpstack-gateway-mesh' in services)"
+      description: "Modulation to use for relaying messages"
+      options: ["LORA", "FSK"]
+      default: "LORA"
+    - name: RELAY_SF
+      advanced: True
+      condition: "('chirpstack-gateway-mesh' in services) and (RELAY_MODULATION == 'LORA')"
+      description: "Spreading factor to use for relaying messages"
+      default: "7"
+    - name: RELAY_BANDWIDTH
+      advanced: True
+      condition: "('chirpstack-gateway-mesh' in services) and (RELAY_MODULATION == 'LORA')"
+      description: "Band width to use for relaying messages"
+      default: "125000"
+    - name: RELAY_CODERATE
+      advanced: True
+      condition: "('chirpstack-gateway-mesh' in services) and (RELAY_MODULATION == 'LORA')"
+      description: "Code rate to use for relaying messages"
+      default: "4/5"
+    - name: RELAY_FSK_BITRATE
+      advanced: True
+      condition: "('chirpstack-gateway-mesh' in services) and (RELAY_MODULATION == 'FSK')"
+      description: Bit rate to use for relaying messages"
+      default: "1000"
     - name: MQTT_SERVER
       condition: "('chirpstack-mqtt-forwarder' in services)"
       description: MQTT broker to connect to
@@ -95,22 +136,27 @@ x-icompose:
     - name: DEVICE_SOCKET_NAME
       advanced: True
       condition: "('chirpstack-concentratord-slot2' in services)"
+      description: Socket to use for end-device messages
       default: slot1
     - name: RELAY_SOCKET_NAME
       advanced: True
-      condition: "('chirpstack-gateway-relay' in services) and ('chirpstack-concentratord-slot2' not in services)"
+      condition: "('chirpstack-gateway-mesh' in services) and ('chirpstack-concentratord-slot2' not in services)"
+      description: Socket to use for relayed messages
       default: slot1
     - name: RELAY_SOCKET_NAME
       advanced: True
-      condition: "('chirpstack-gateway-relay' in services) and ('chirpstack-concentratord-slot2' in services)"
+      condition: "('chirpstack-gateway-mesh' in services) and ('chirpstack-concentratord-slot2' in services)"
+      description: Socket to use for relayed messages
       default: slot2
     - name: FORWARDER_SOCKET_NAME
       advanced: True
-      condition: "('chirpstack-gateway-relay' not in services) and (('chirpstack-mqtt-forwarder' in services) or ('chirpstack-udp-forwarder' in services))"
+      condition: "('chirpstack-gateway-mesh' not in services) and (('chirpstack-mqtt-forwarder' in services) or ('chirpstack-udp-forwarder' in services))"
+      description: Socket to use to send messages to the MQTT forwarder
       default: slot1
     - name: FORWARDER_SOCKET_NAME
       advanced: True
-      condition: "('chirpstack-gateway-relay' in services) and (('chirpstack-mqtt-forwarder' in services) or ('chirpstack-udp-forwarder' in services))"
+      condition: "('chirpstack-gateway-mesh' in services) and (('chirpstack-mqtt-forwarder' in services) or ('chirpstack-udp-forwarder' in services))"
+      description: Socket to use to send messages to the MQTT forwarder
       default: forwarder
   post-script: |
     sleep 5 ; 
@@ -152,8 +198,8 @@ services:
       - RESET_GPIO=${RESET_GPIO_SLOT2:-17}
       - SOCKET_NAME=${RELAY_SOCKET_NAME:-slot2}
 
-  chirpstack-gateway-relay:
-    image: xoseperez/chirpstack-gateway-relay:4
+  chirpstack-gateway-mesh:
+    image: xoseperez/chirpstack-gateway-mesh:4
     restart: unless-stopped
     depends_on:
       - chirpstack-concentratord-slot1
@@ -161,8 +207,16 @@ services:
       - ipcsocket:/tmp
     environment:
       - RELAY_BORDER=${RELAY_BORDER:-false}
+      - RELAY_SIGNING_KEY=${RELAY_SIGNING_KEY:-00000000000000000000000000000000}
+      - RELAY_MAX_HOP_COUNT=${RELAY_MAX_HOP_COUNT:-1}
       - RELAY_IGNORE_DIRECT=${RELAY_IGNORE_DIRECT:-false}
       - RELAY_REGION=${RELAY_REGION:-eu868}
+      - RELAY_TX_POWER=${RELAY_TX_POWER:-10}
+      - RELAY_MODULATION=${RELAY_MODULATION:-LORA}
+      - RELAY_SF=${RELAY_SF:-7}
+      - RELAY_BANDWIDTH=${RELAY_BANDWIDTH:-125000}
+      - RELAY_CODERATE=${RELAY_CODERATE:-4/5}
+      - RELAY_FSK_BITRATE=${RELAY_FSK_BITRATE:-0}
       - RELAY_SOCKET_DEVICES=${DEVICE_SOCKET_NAME:-slot1}
       - RELAY_SOCKET_RELAY=${RELAY_SOCKET_NAME:-slot1}
       - RELAY_SOCKET_FORWARDER=forwarder
