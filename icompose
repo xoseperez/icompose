@@ -630,6 +630,12 @@ def main_menu():
         else:
             return
 
+def show_welcome():
+    print()
+    print(f"{color.header}{color.bold}{APP_NAME} {APP_VERSION}{color.reset}")
+    print(f"{color.header}{APP_DESCRIPTION}{color.reset}")
+    print(f"{color.header}(c) Xose Pérez <xose.perez@gmail.com>{color.reset}")
+
 def show_help():
 
     print()
@@ -638,6 +644,7 @@ def show_help():
     print(f"{color.info}      -h : This help{color.reset}")
     print(f"{color.info}      -l : List available stacks{color.reset}")
     print(f"{color.info}      -q : Do not edit configurations when running a stack{color.reset}")
+    print(f"{color.info}      -v : Show version{color.reset}")
     print(f"{color.info} <stack> : Run given stack directly{color.reset}")
     print(f"{color.info}\nIf no option provided, tool will enter in interactive mode.{color.reset}")
 
@@ -649,11 +656,6 @@ def main():
 
     global stacks
     global groups
-
-    # Welcome message
-    print(f"\n{color.header}{color.bold}{APP_NAME} {APP_VERSION}{color.reset}")
-    print(f"{color.header}{APP_DESCRIPTION}{color.reset}")
-    print(f"{color.header}(c) Xose Pérez <xose.perez@gmail.com>{color.reset}")
 
     # Load stacks
     read_stack_folders()
@@ -667,15 +669,19 @@ def main():
         match sys.argv[i]:
             case "-h":
                 options['help'] = True
+            case "-v":
+                options['version'] = True
             case "-q":
                 options['quiet'] = True
             case "-l":
                 options['list'] = True
             case _:
                 stack = sys.argv[i]
-        
+            
     # Actions
-    if options.get('help', False):
+    if options.get('version', False):
+        show_welcome()
+    elif options.get('help', False):
         show_help()
     elif options.get('list', False):
         list_stacks()
