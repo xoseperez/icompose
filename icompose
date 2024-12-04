@@ -14,6 +14,8 @@ import string
 import shutil
 
 import getmac
+from rich.console import Console
+from rich.table import Table
 
 # -----------------------------------------------------------------------------
 # Globals
@@ -21,7 +23,7 @@ import getmac
 
 APP_NAME = "iCOMPOSE"
 APP_DESCRIPTION = "Interactive Docker Compose Utility"
-APP_VERSION = "v0.1.0"
+APP_VERSION = "v0.1.1"
 
 stacks = []
 groups = []
@@ -380,12 +382,15 @@ def list_stacks():
 
     global stacks
 
-    # Header
     print()
-    show_header(f"Available stacks")
-    print()
+    table = Table()
+    for column in ['Stack', "Group", "Description", "Folder"]:
+        table.add_column(column)
     for stack in stacks:
-        print(f"* {stack['project']}")
+        folder = stack['file'].replace('docker-compose.yml', '')
+        table.add_row(*[stack['project'], stack['group'], stack['data']['description'], folder], style='bright_green')
+    console = Console()
+    console.print(table)
 
 def configure_stack_menu(project, quiet=False):
 
@@ -601,8 +606,6 @@ def docker_management_menu():
         print()
         input_enter()
 
-
-
 def main_menu():
 
     options=[
@@ -627,6 +630,16 @@ def main_menu():
         else:
             return
 
+def show_help():
+
+    print()
+    print(f"{color.info}Usage : icompose [-h|l|[-q] <stack>]{color.reset}")
+    print()
+    print(f"{color.info}      -h : This help{color.reset}")
+    print(f"{color.info}      -l : List available stacks{color.reset}")
+    print(f"{color.info}      -q : Do not edit configurations when running a stack{color.reset}")
+    print(f"{color.info} <stack> : Run given stack directly{color.reset}")
+    print(f"{color.info}\nIf no option provided, tool will enter in interactive mode.{color.reset}")
 
 # -----------------------------------------------------------------------------
 # Entrypoint
@@ -652,6 +665,8 @@ def main():
     stack=None
     for i in range(1, len(sys.argv)):
         match sys.argv[i]:
+            case "-h":
+                options['help'] = True
             case "-q":
                 options['quiet'] = True
             case "-l":
@@ -659,8 +674,10 @@ def main():
             case _:
                 stack = sys.argv[i]
         
-    # Show menu
-    if options.get('list', False):
+    # Actions
+    if options.get('help', False):
+        show_help()
+    elif options.get('list', False):
         list_stacks()
     elif stack:
         configure_stack_menu(stack, options.get('quiet', False))

@@ -1,2 +1,3 @@
 PyYAML==6.0.1
 getmac==0.9.4
+rich==13.7.1
