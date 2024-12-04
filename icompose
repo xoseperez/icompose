@@ -23,6 +23,9 @@ APP_NAME = "iCOMPOSE"
 APP_DESCRIPTION = "Interactive Docker Compose Utility"
 APP_VERSION = "v0.0.1"
 
+stacks = []
+groups = []
+
 # -----------------------------------------------------------------------------
 # Utils
 # -----------------------------------------------------------------------------
@@ -605,15 +608,17 @@ def main_menu():
 # Entrypoint
 # -----------------------------------------------------------------------------
 
-if __name__ == "__main__":
-    
+def main():
+
+    global stacks
+    global groups
+
     # Welcome message
     print(f"\n{color.header}{color.bold}{APP_NAME} {APP_VERSION}{color.reset}")
     print(f"{color.header}{APP_DESCRIPTION}{color.reset}")
     print(f"{color.header}(c) Xose Pérez <xose.perez@gmail.com>{color.reset}")
 
     # Load stacks
-    stacks = []
     read_stack_folders()
     groups = list(set([stack['group'] for stack in stacks]))
     groups.sort()
@@ -624,6 +629,7 @@ if __name__ == "__main__":
     # Bye
     print(f"\n{color.green}Bye!{color.reset}\n")
 
-
+if __name__ == "__main__":
+    main()    
 
 
